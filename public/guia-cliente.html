@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hub 360 - Guia do Cliente</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --code-bg: #f3f4f6;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+      --purple: #7c3aed;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* NAV */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-title { font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
+    .topbar-title span { color: var(--accent); }
+    .topbar-links { display: flex; gap: 20px; }
+    .topbar-links a {
+      font-size: 13px; color: var(--text-muted); text-decoration: none;
+      font-weight: 500; transition: color .15s;
+    }
+    .topbar-links a:hover { color: var(--accent); }
+    .topbar-links a.active { color: var(--accent); }
+
+    /* SIDEBAR */
+    .layout { display: flex; margin-top: 56px; }
+    .sidebar {
+      position: fixed; top: 56px; left: 0; bottom: 0;
+      width: 260px; overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 24px 16px; background: var(--surface);
+    }
+    .sidebar-group { margin-bottom: 20px; }
+    .sidebar-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px;
+      padding-left: 10px;
+    }
+    .sidebar a {
+      display: block; padding: 5px 10px; border-radius: 6px;
+      font-size: 13px; color: var(--text); text-decoration: none;
+      transition: background .12s;
+    }
+    .sidebar a:hover { background: var(--accent-light); color: var(--accent); }
+    .sidebar a.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+    /* MAIN */
+    .main { margin-left: 260px; padding: 40px 48px 80px; max-width: 900px; width: 100%; }
+
+    /* HERO */
+    .hero { margin-bottom: 48px; }
+    .hero h1 {
+      font-size: 36px; font-weight: 800; letter-spacing: -0.03em;
+      line-height: 1.15; margin-bottom: 12px;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 17px; color: var(--text-muted); max-width: 560px; }
+
+    .badge-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px; font-size: 11px;
+      font-weight: 600; border: 1px solid var(--border); background: var(--surface);
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* SECTIONS */
+    section { margin-bottom: 48px; }
+    section > h2 {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 16px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+    section > h3 {
+      font-size: 17px; font-weight: 700; margin: 24px 0 10px;
+      color: var(--text);
+    }
+    section p, section li { margin-bottom: 8px; color: #374151; }
+    section ul, section ol { padding-left: 20px; margin-bottom: 16px; }
+    section li { margin-bottom: 6px; }
+
+    /* TABLES */
+    .table-wrap { overflow-x: auto; margin: 12px 0 20px; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: var(--code-bg); }
+    th { text-align: left; padding: 10px 14px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); vertical-align: top; }
+    tr:hover td { background: #f9fafb; }
+
+    /* STATUS PILLS */
+    .status-pill {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; border: 1px solid;
+    }
+    .s-new { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .s-analyzing { background: #fefce8; color: #a16207; border-color: #fde68a; }
+    .s-fixing { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .s-awaiting { background: #faf5ff; color: #7c3aed; border-color: #ddd6fe; }
+    .s-resolved { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+    .s-closed { background: #f9fafb; color: #6b7280; border-color: #d1d5db; }
+    .s-reopened { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+    .sev-critical { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+    .sev-high { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .sev-medium { background: #fefce8; color: #a16207; border-color: #fde68a; }
+    .sev-low { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+
+    /* CARDS */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 16px 0; }
+    .card {
+      padding: 16px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface); transition: box-shadow .15s;
+    }
+    .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .card p { font-size: 12.5px; color: var(--text-muted); margin: 0; }
+
+    /* FLOW */
+    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .flow-step {
+      padding: 8px 14px; border-radius: 6px; font-size: 12px;
+      background: var(--accent-light); color: var(--accent); font-weight: 600;
+      border: 1px solid #bfdbfe;
+    }
+    .flow-arrow { color: var(--text-muted); font-size: 16px; }
+
+    /* CALLOUT */
+    .callout {
+      padding: 14px 16px; border-radius: 8px; margin: 16px 0;
+      font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .callout-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .callout-warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .callout-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+    .callout-danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* COMPARISON */
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+    .comparison-bad, .comparison-good {
+      padding: 14px 16px; border-radius: 8px; font-size: 13px;
+    }
+    .comparison-bad {
+      background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+    }
+    .comparison-good {
+      background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+    }
+    .comparison-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 8px; display: block;
+    }
+    .comparison-bad .comparison-label { color: #dc2626; }
+    .comparison-good .comparison-label { color: #059669; }
+    .comparison-item { margin-bottom: 6px; padding-left: 16px; position: relative; }
+    .comparison-item::before { position: absolute; left: 0; }
+    .comparison-bad .comparison-item::before { content: "\2717"; color: #dc2626; }
+    .comparison-good .comparison-item::before { content: "\2713"; color: #059669; }
+
+    /* SEVERITY CARDS */
+    .severity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+    .severity-card {
+      padding: 16px; border-radius: 8px; border: 1px solid;
+    }
+    .severity-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .severity-card p { font-size: 12.5px; margin: 0 0 8px; }
+    .severity-card .example { font-size: 12px; font-style: italic; opacity: 0.85; }
+
+    /* STEP NUMBERS */
+    .step { display: flex; gap: 16px; margin: 20px 0; align-items: flex-start; }
+    .step-number {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-content { flex: 1; padding-top: 4px; }
+    .step-content h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .step-content p { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+    /* FAQ */
+    .faq-item { margin-bottom: 20px; }
+    .faq-item dt {
+      font-weight: 700; font-size: 14px; margin-bottom: 4px;
+      color: var(--text); padding-left: 20px; position: relative;
+    }
+    .faq-item dt::before {
+      content: "Q"; position: absolute; left: 0; top: 0;
+      color: var(--accent); font-weight: 800; font-size: 13px;
+    }
+    .faq-item dd {
+      font-size: 13px; color: var(--text-muted); padding-left: 20px;
+    }
+
+    /* FOOTER */
+    .footer {
+      margin-left: 260px; padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-muted);
+      display: flex; justify-content: space-between;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main, .footer { margin-left: 0; padding-left: 20px; padding-right: 20px; }
+      .hero h1 { font-size: 28px; }
+      .comparison { grid-template-columns: 1fr; }
+      .severity-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-title">Hub <span>360</span> Guia do Cliente</div>
+  <div class="topbar-links">
+    <a href="guia-cliente.html" class="active">Guia do Cliente</a>
+    <a href="guia-equipe.html">Guia da Equipe</a>
+    <a href="docs.html">Docs Tecnica</a>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-group">
+    <div class="sidebar-label">Inicio</div>
+    <a href="#bem-vindo">Bem-vindo</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Reportar um Bug</div>
+    <a href="#como-reportar">Passo a passo</a>
+    <a href="#titulo-bom">Como escrever um bom titulo</a>
+    <a href="#campos">Campos do formulario</a>
+    <a href="#gravidade">Niveis de gravidade</a>
+    <a href="#evidencias">Screenshots e videos</a>
+    <a href="#limites-upload">Limites de upload</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Depois do Envio</div>
+    <a href="#depois">O que acontece depois</a>
+    <a href="#ciclo">Ciclo de vida do bug</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Extras</div>
+    <a href="#dicas">Dicas para reports melhores</a>
+    <a href="#faq">Perguntas frequentes</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero" id="bem-vindo">
+    <h1>Guia de <span>Report</span> de Bugs</h1>
+    <p>Este guia explica como reportar um bug de forma clara e completa. Quanto melhor o report, mais rapido a equipe consegue resolver o problema.</p>
+    <div class="badge-row">
+      <span class="badge"><span class="badge-dot" style="background:#059669"></span> Sem login necessario</span>
+      <span class="badge"><span class="badge-dot" style="background:#2563eb"></span> Formulario simples</span>
+      <span class="badge"><span class="badge-dot" style="background:#7c3aed"></span> Aceita video e imagem</span>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">&#9432;</span>
+    <div>
+      <strong>Voce nao precisa de login.</strong> O formulario de report e publico. Basta acessar o link que voce recebeu (no formato <code>/report/nome-do-projeto</code>) e preencher os campos.
+    </div>
+  </div>
+
+  <!-- COMO REPORTAR -->
+  <section id="como-reportar">
+    <h2>Como reportar um bug</h2>
+    <p>Siga estes passos para enviar seu report:</p>
+
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h4>Acesse o link do projeto</h4>
+        <p>Use o link que voce recebeu da equipe. Ele abre o formulario de report ja vinculado ao projeto correto.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h4>Identifique-se (opcional)</h4>
+        <p>Preencha seu nome e email se quiser que a equipe saiba quem reportou. Esses campos sao opcionais.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h4>Descreva o bug</h4>
+        <p>Preencha o titulo, onde encontrou, o que fez, o que esperava e o que aconteceu de fato. Veja detalhes de cada campo abaixo.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <h4>Escolha a gravidade</h4>
+        <p>Indique o quanto o problema te atrapalha: Critica, Alta, Media ou Baixa.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <h4>Anexe uma evidencia</h4>
+        <p>Tire um print ou grave um video curto mostrando o problema. Pelo menos 1 arquivo e obrigatorio.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <h4>Envie o report</h4>
+        <p>Clique em "Enviar report". Voce recebera uma confirmacao com o numero do bug.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">&#10003;</span>
+      <div>
+        <strong>Salvamento automatico:</strong> Seus dados sao salvos automaticamente enquanto voce preenche. Se fechar o navegador por acidente, ao reabrir o link seus dados estarao la.
+      </div>
+    </div>
+  </section>
+
+  <!-- TITULO BOM -->
+  <section id="titulo-bom">
+    <h2>Como escrever um bom titulo</h2>
+    <p>O titulo e a primeira coisa que a equipe ve. Um bom titulo permite entender o problema sem precisar ler os detalhes.</p>
+
+    <h3>Regra de ouro</h3>
+    <p>Um bom titulo responde: <strong>"O que esta quebrado?"</strong> e <strong>"Onde?"</strong></p>
+
+    <div class="comparison">
+      <div class="comparison-bad">
+        <span class="comparison-label">Titulos ruins</span>
+        <div class="comparison-item">Nao funciona</div>
+        <div class="comparison-item">Bug no app</div>
+        <div class="comparison-item">Erro</div>
+        <div class="comparison-item">Problema na tela</div>
+        <div class="comparison-item">Tela bugada</div>
+      </div>
+      <div class="comparison-good">
+        <span class="comparison-label">Titulos bons</span>
+        <div class="comparison-item">Botao "Fazer Pix" nao responde ao toque</div>
+        <div class="comparison-item">Tela de login mostra erro ao digitar email valido</div>
+        <div class="comparison-item">App fecha sozinho ao abrir camera no perfil</div>
+        <div class="comparison-item">Saldo aparece como R$ 0,00 apos transferencia</div>
+        <div class="comparison-item">Menu lateral nao fecha ao tocar fora dele</div>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <div>
+        <strong>Evite titulos genericos.</strong> "Nao funciona" pode significar 100 coisas diferentes. Seja especifico sobre o que viu e onde viu.
+      </div>
+    </div>
+  </section>
+
+  <!-- CAMPOS -->
+  <section id="campos">
+    <h2>Campos do formulario</h2>
+    <p>O formulario de report tem campos obrigatorios (marcados com *) e opcionais. Veja o que preencher em cada um:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Obrigatorio</th>
+            <th>O que preencher</th>
+            <th>Exemplo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Seu nome</strong></td>
+            <td>Nao</td>
+            <td>Seu nome para a equipe saber quem reportou</td>
+            <td>Maria Silva</td>
+          </tr>
+          <tr>
+            <td><strong>Seu email</strong></td>
+            <td>Nao</td>
+            <td>Email para possivel contato</td>
+            <td>maria@empresa.com</td>
+          </tr>
+          <tr>
+            <td><strong>Titulo do Bug *</strong></td>
+            <td>Sim</td>
+            <td>Resumo curto e claro do problema (min. 5 caracteres)</td>
+            <td>Botao "Salvar" nao responde na tela de perfil</td>
+          </tr>
+          <tr>
+            <td><strong>Onde encontrou *</strong></td>
+            <td>Sim</td>
+            <td>A tela ou local exato onde o problema aparece</td>
+            <td>Tela inicial > Menu > Perfil > Botao Salvar</td>
+          </tr>
+          <tr>
+            <td><strong>O que fez *</strong></td>
+            <td>Sim</td>
+            <td>Passos que voce seguiu ate encontrar o problema (min. 5 caracteres)</td>
+            <td>1. Abri o app<br>2. Fui no Menu<br>3. Toquei em Perfil<br>4. Alterei o nome<br>5. Toquei em Salvar</td>
+          </tr>
+          <tr>
+            <td><strong>O que esperava *</strong></td>
+            <td>Sim</td>
+            <td>O que deveria ter acontecido se tudo funcionasse certo</td>
+            <td>O nome deveria ser atualizado e aparecer uma mensagem de confirmacao</td>
+          </tr>
+          <tr>
+            <td><strong>O que aconteceu *</strong></td>
+            <td>Sim</td>
+            <td>O que realmente aconteceu (o erro, o comportamento inesperado)</td>
+            <td>Nada aconteceu. O botao fica cinza e o nome nao muda. Sem mensagem de erro.</td>
+          </tr>
+          <tr>
+            <td><strong>Gravidade *</strong></td>
+            <td>Sim</td>
+            <td>O quanto o problema te atrapalha (veja detalhes abaixo)</td>
+            <td>Alta</td>
+          </tr>
+          <tr>
+            <td><strong>Dispositivo</strong></td>
+            <td>Nao</td>
+            <td>Preenchido automaticamente, mas voce pode corrigir</td>
+            <td>Samsung Galaxy A34 / Android 14</td>
+          </tr>
+          <tr>
+            <td><strong>Evidencia *</strong></td>
+            <td>Sim</td>
+            <td>Pelo menos 1 screenshot ou video do problema</td>
+            <td>Print da tela com o erro</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Esperado vs. Aconteceu: como preencher</h3>
+    <p>Esses dois campos sao fundamentais para a equipe entender o bug. Veja exemplos:</p>
+
+    <div class="comparison">
+      <div class="comparison-good" style="background:#eff6ff; border-color:#bfdbfe; color:#1e40af;">
+        <span class="comparison-label" style="color:#2563eb;">O que esperava (exemplo 1)</span>
+        <div class="comparison-item" style="padding-left:0;">Ao tocar em "Confirmar pagamento", o app deveria processar o pagamento e mostrar o comprovante na tela.</div>
+      </div>
+      <div class="comparison-bad">
+        <span class="comparison-label">O que aconteceu (exemplo 1)</span>
+        <div class="comparison-item" style="padding-left:0;">O app mostra uma tela branca por 5 segundos e depois volta para a tela inicial. O pagamento nao foi processado.</div>
+      </div>
+    </div>
+
+    <div class="comparison" style="margin-top:8px;">
+      <div class="comparison-good" style="background:#eff6ff; border-color:#bfdbfe; color:#1e40af;">
+        <span class="comparison-label" style="color:#2563eb;">O que esperava (exemplo 2)</span>
+        <div class="comparison-item" style="padding-left:0;">A lista de transacoes deveria mostrar as ultimas 30 transacoes em ordem cronologica.</div>
+      </div>
+      <div class="comparison-bad">
+        <span class="comparison-label">O que aconteceu (exemplo 2)</span>
+        <div class="comparison-item" style="padding-left:0;">A lista aparece vazia, com a mensagem "Nenhuma transacao encontrada", mesmo tendo transacoes recentes.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRAVIDADE -->
+  <section id="gravidade">
+    <h2>Niveis de gravidade</h2>
+    <p>Ao reportar um bug, voce deve indicar o quanto ele te atrapalha. Escolha o nivel que melhor descreve a situacao:</p>
+
+    <div class="severity-grid">
+      <div class="severity-card" style="background:#fef2f2; border-color:#fecaca;">
+        <h4 style="color:#dc2626;">
+          <span class="status-pill sev-critical">Critica</span>
+        </h4>
+        <p style="color:#991b1b;">O app trava, perde dados, ou uma funcao essencial nao funciona de jeito nenhum.</p>
+        <div class="example" style="color:#991b1b;">
+          Exemplos: App fecha sozinho ao abrir. Dados de usuario desapareceram. Login nao funciona para ninguem. Pagamento duplicado.
+        </div>
+      </div>
+      <div class="severity-card" style="background:#fff7ed; border-color:#fed7aa;">
+        <h4 style="color:#c2410c;">
+          <span class="status-pill sev-high">Alta</span>
+        </h4>
+        <p style="color:#92400e;">Uma funcionalidade importante nao funciona corretamente.</p>
+        <div class="example" style="color:#92400e;">
+          Exemplos: Botao de Pix nao responde. Filtro de busca nao retorna resultados. Push notifications nao chegam.
+        </div>
+      </div>
+      <div class="severity-card" style="background:#fefce8; border-color:#fde68a;">
+        <h4 style="color:#a16207;">
+          <span class="status-pill sev-medium">Media</span>
+        </h4>
+        <p style="color:#92400e;">Algo nao funciona como deveria, mas existe um caminho alternativo (workaround).</p>
+        <div class="example" style="color:#92400e;">
+          Exemplos: Ordenacao de lista invertida, mas da para usar o filtro. Botao leva para tela errada, mas da para voltar. Carregamento demora mais de 10 segundos.
+        </div>
+      </div>
+      <div class="severity-card" style="background:#eff6ff; border-color:#bfdbfe;">
+        <h4 style="color:#1d4ed8;">
+          <span class="status-pill sev-low">Baixa</span>
+        </h4>
+        <p style="color:#1e40af;">Detalhe visual, texto com erro de digitacao, ou melhoria pequena.</p>
+        <div class="example" style="color:#1e40af;">
+          Exemplos: Texto cortado num botao. Icone desalinhado. Cor diferente do esperado. Typo na mensagem de boas-vindas.
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">&#9432;</span>
+      <div>
+        <strong>Na duvida?</strong> Escolha "Media". A equipe pode ajustar a gravidade depois, se necessario. O importante e que o bug seja reportado.
+      </div>
+    </div>
+  </section>
+
+  <!-- EVIDENCIAS -->
+  <section id="evidencias">
+    <h2>Screenshots e videos</h2>
+    <p>Evidencias visuais sao fundamentais. Uma imagem vale mais que mil palavras, especialmente num report de bug.</p>
+
+    <h3>Quando usar screenshot (imagem)</h3>
+    <ul>
+      <li>Erro de layout (elemento fora do lugar, texto cortado)</li>
+      <li>Mensagem de erro visivel na tela</li>
+      <li>Tela em estado errado (dados incorretos, lista vazia quando deveria ter dados)</li>
+      <li>Diferenca visual entre o esperado e o real</li>
+    </ul>
+
+    <h3>Quando usar video</h3>
+    <ul>
+      <li>Bug que envolve uma sequencia de passos (ajuda a equipe reproduzir)</li>
+      <li>Animacao ou transicao que nao funciona</li>
+      <li>Problema intermitente que precisa ser "pego no flagra"</li>
+      <li>App travando ou fechando (mostra o momento exato)</li>
+    </ul>
+
+    <h3>Dicas para boas evidencias</h3>
+    <ul>
+      <li><strong>Mostre o contexto:</strong> Inclua a tela inteira, nao apenas o botao com problema</li>
+      <li><strong>Destaque o problema:</strong> Se possivel, circule ou sinalize a area com problema</li>
+      <li><strong>Video curto:</strong> Nao precisa de 5 minutos. 10-30 segundos mostrando o problema e ideal</li>
+      <li><strong>Sem edicao:</strong> Nao precisa editar o video. Gravacao direta da tela e suficiente</li>
+    </ul>
+  </section>
+
+  <!-- LIMITES -->
+  <section id="limites-upload">
+    <h2>Limites de upload</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Restricao</th>
+            <th>Limite</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Quantidade de arquivos</td>
+            <td><strong>Maximo 3 arquivos</strong> por report</td>
+          </tr>
+          <tr>
+            <td>Tamanho por arquivo</td>
+            <td><strong>Maximo 100 MB</strong> cada</td>
+          </tr>
+          <tr>
+            <td>Formatos de imagem</td>
+            <td><span class="status-pill sev-low">JPG</span> <span class="status-pill sev-low">PNG</span> <span class="status-pill sev-low">WebP</span></td>
+          </tr>
+          <tr>
+            <td>Formatos de video</td>
+            <td><span class="status-pill sev-high">MP4</span> <span class="status-pill sev-high">MOV</span> <span class="status-pill sev-high">WebM</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <div>
+        <strong>Formato nao suportado?</strong> Se seu video esta em outro formato (como AVI ou MKV), converta para MP4 antes de enviar. A maioria dos celulares ja grava em MP4 por padrao.
+      </div>
+    </div>
+  </section>
+
+  <!-- DEPOIS DO ENVIO -->
+  <section id="depois">
+    <h2>O que acontece depois</h2>
+    <p>Apos voce enviar um report, o seguinte processo acontece:</p>
+
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h4>Bug recebe um numero</h4>
+        <p>O sistema gera automaticamente um numero unico (ex: #42). Voce ve esse numero na tela de confirmacao.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h4>Equipe recebe como "Novo"</h4>
+        <p>O bug aparece no dashboard da equipe com status <span class="status-pill s-new">Novo</span>. A equipe e notificada.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h4>Equipe analisa e corrige</h4>
+        <p>Um membro da equipe vai investigar o problema, identificar a causa e implementar a correcao.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <h4>Correcao e validada</h4>
+        <p>Apos a correcao, outra pessoa da equipe valida que o problema foi realmente resolvido.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <h4>Bug e fechado</h4>
+        <p>Apos validacao bem-sucedida, o bug e marcado como resolvido e fechado.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">&#10003;</span>
+      <div>
+        <strong>Voce pode enviar quantos reports quiser.</strong> Apos o envio, a tela de confirmacao oferece o botao "Reportar outro bug". Cada problema diferente deve ser um report separado.
+      </div>
+    </div>
+  </section>
+
+  <!-- CICLO DE VIDA -->
+  <section id="ciclo">
+    <h2>Ciclo de vida do bug</h2>
+    <p>Todo bug passa por estas etapas:</p>
+
+    <div class="flow">
+      <span class="flow-step" style="background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;">Novo</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step" style="background:#fefce8; color:#a16207; border-color:#fde68a;">Em analise</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step" style="background:#fff7ed; color:#c2410c; border-color:#fed7aa;">Em correcao</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step" style="background:#faf5ff; color:#7c3aed; border-color:#ddd6fe;">Aguardando validacao</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step" style="background:#ecfdf5; color:#059669; border-color:#a7f3d0;">Resolvido</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step" style="background:#f9fafb; color:#6b7280; border-color:#d1d5db;">Fechado</span>
+    </div>
+
+    <p style="margin-top: 12px;">Se a validacao detectar que o bug nao foi totalmente corrigido, ele pode ser <span class="status-pill s-reopened">Reaberto</span> e voltar ao ciclo.</p>
+  </section>
+
+  <!-- DICAS -->
+  <section id="dicas">
+    <h2>Dicas para reports melhores</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>1 bug = 1 report</h4>
+        <p>Encontrou 3 problemas? Envie 3 reports separados. Misturar bugs num unico report dificulta o rastreamento.</p>
+      </div>
+      <div class="card">
+        <h4>Seja especifico</h4>
+        <p>Em vez de "a tela bugou", diga exatamente o que viu: "O saldo aparece como R$ 0,00 depois de fazer um Pix".</p>
+      </div>
+      <div class="card">
+        <h4>Descreva os passos</h4>
+        <p>Numere os passos: 1. Abri o app. 2. Fui em Configuracoes. 3. Toquei em Alterar Senha. Isso ajuda a equipe a reproduzir.</p>
+      </div>
+      <div class="card">
+        <h4>Sempre anexe evidencia</h4>
+        <p>Um video de 15 segundos mostrando o problema vale mais que 3 paragrafos de descricao.</p>
+      </div>
+      <div class="card">
+        <h4>Nao filtre</h4>
+        <p>Reporte tudo que parecer errado, mesmo que voce ache que e "besteira". Bugs pequenos podem indicar problemas maiores.</p>
+      </div>
+      <div class="card">
+        <h4>Tente reproduzir</h4>
+        <p>Antes de enviar, tente fazer o bug acontecer de novo. Se conseguir, descreva os passos exatos. Se nao, mencione que aconteceu apenas uma vez.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <h2>Perguntas frequentes</h2>
+
+    <dl>
+      <div class="faq-item">
+        <dt>Preciso de login para reportar um bug?</dt>
+        <dd>Nao. O formulario de report e publico e pode ser acessado por qualquer pessoa com o link do projeto.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Meu nome e email sao obrigatorios?</dt>
+        <dd>Nao. Sao opcionais. Mas se voce preencher, a equipe pode entrar em contato caso precise de mais detalhes sobre o problema.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Posso reportar o mesmo bug mais de uma vez?</dt>
+        <dd>Se voce ja enviou e recebeu o numero de confirmacao, nao precisa enviar de novo. A equipe ja recebeu. Se o problema persistir apos a equipe dizer que corrigiu, reporte novamente mencionando que e recorrente.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Fechei o navegador sem enviar. Perdi tudo?</dt>
+        <dd>Provavelmente nao. O formulario salva seus dados automaticamente. Ao reabrir o link, os campos devem estar preenchidos. Porem, arquivos anexados podem precisar ser adicionados novamente.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Nao consigo gravar video. Posso enviar so screenshot?</dt>
+        <dd>Sim. Pelo menos 1 arquivo e obrigatorio, mas pode ser screenshot ou video. O importante e ter uma evidencia visual.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>O arquivo e muito grande. O que faco?</dt>
+        <dd>O limite e 100 MB por arquivo. Se o video for maior, tente gravar um trecho mais curto ou reduzir a resolucao. Na maioria dos celulares, configurar o video para 720p gera arquivos menores.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Posso acompanhar o status do meu bug?</dt>
+        <dd>Atualmente, o acompanhamento de status e feito pela equipe internamente. Se voce preencheu seu email, a equipe pode te notificar quando o bug for resolvido.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Encontrei um bug muito grave (app trava, perde dados). O que faco?</dt>
+        <dd>Reporte normalmente pelo formulario, mas selecione a gravidade <span class="status-pill sev-critical">Critica</span>. Bugs criticos recebem prioridade maxima da equipe.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>O link do projeto da erro "Projeto nao encontrado".</dt>
+        <dd>Verifique se o link esta correto. Se continuar com problema, entre em contato com a equipe que forneceu o link. O projeto pode ter sido desativado ou o link pode ter um erro de digitacao.</dd>
+      </div>
+    </dl>
+  </section>
+
+</main>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>Hub 360 Bug Tracker</span>
+  <span>Guia do Cliente v1.0</span>
+</div>
+
+</body>
+</html>

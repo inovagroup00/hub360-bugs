@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hub 360 - Guia da Equipe</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --code-bg: #f3f4f6;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+      --purple: #7c3aed;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* NAV */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-title { font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
+    .topbar-title span { color: var(--accent); }
+    .topbar-links { display: flex; gap: 20px; }
+    .topbar-links a {
+      font-size: 13px; color: var(--text-muted); text-decoration: none;
+      font-weight: 500; transition: color .15s;
+    }
+    .topbar-links a:hover { color: var(--accent); }
+    .topbar-links a.active { color: var(--accent); }
+
+    /* SIDEBAR */
+    .layout { display: flex; margin-top: 56px; }
+    .sidebar {
+      position: fixed; top: 56px; left: 0; bottom: 0;
+      width: 260px; overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 24px 16px; background: var(--surface);
+    }
+    .sidebar-group { margin-bottom: 20px; }
+    .sidebar-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px;
+      padding-left: 10px;
+    }
+    .sidebar a {
+      display: block; padding: 5px 10px; border-radius: 6px;
+      font-size: 13px; color: var(--text); text-decoration: none;
+      transition: background .12s;
+    }
+    .sidebar a:hover { background: var(--accent-light); color: var(--accent); }
+    .sidebar a.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+    /* MAIN */
+    .main { margin-left: 260px; padding: 40px 48px 80px; max-width: 900px; width: 100%; }
+
+    /* HERO */
+    .hero { margin-bottom: 48px; }
+    .hero h1 {
+      font-size: 36px; font-weight: 800; letter-spacing: -0.03em;
+      line-height: 1.15; margin-bottom: 12px;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 17px; color: var(--text-muted); max-width: 560px; }
+
+    .badge-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px; font-size: 11px;
+      font-weight: 600; border: 1px solid var(--border); background: var(--surface);
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* SECTIONS */
+    section { margin-bottom: 48px; }
+    section > h2 {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 16px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+    section > h3 {
+      font-size: 17px; font-weight: 700; margin: 24px 0 10px;
+      color: var(--text);
+    }
+    section > h4 {
+      font-size: 15px; font-weight: 700; margin: 20px 0 8px;
+      color: var(--text);
+    }
+    section p, section li { margin-bottom: 8px; color: #374151; }
+    section ul, section ol { padding-left: 20px; margin-bottom: 16px; }
+    section li { margin-bottom: 6px; }
+
+    /* TABLES */
+    .table-wrap { overflow-x: auto; margin: 12px 0 20px; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: var(--code-bg); }
+    th { text-align: left; padding: 10px 14px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); vertical-align: top; }
+    tr:hover td { background: #f9fafb; }
+
+    /* STATUS PILLS */
+    .status-pill {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; border: 1px solid;
+    }
+    .s-new { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .s-analyzing { background: #fefce8; color: #a16207; border-color: #fde68a; }
+    .s-fixing { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .s-awaiting { background: #faf5ff; color: #7c3aed; border-color: #ddd6fe; }
+    .s-resolved { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+    .s-closed { background: #f9fafb; color: #6b7280; border-color: #d1d5db; }
+    .s-reopened { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+    .sev-critical { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+    .sev-high { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .sev-medium { background: #fefce8; color: #a16207; border-color: #fde68a; }
+    .sev-low { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+
+    /* CARDS */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 16px 0; }
+    .card {
+      padding: 16px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface); transition: box-shadow .15s;
+    }
+    .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .card p { font-size: 12.5px; color: var(--text-muted); margin: 0; }
+
+    /* FLOW */
+    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .flow-step {
+      padding: 8px 14px; border-radius: 6px; font-size: 12px;
+      font-weight: 600; border: 1px solid;
+    }
+    .flow-arrow { color: var(--text-muted); font-size: 16px; }
+
+    /* CALLOUT */
+    .callout {
+      padding: 14px 16px; border-radius: 8px; margin: 16px 0;
+      font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .callout-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .callout-warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .callout-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+    .callout-danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* TRANSITION CARD */
+    .transition-card {
+      padding: 16px; border-radius: 8px; margin: 12px 0;
+      border: 1px solid var(--border); background: var(--surface);
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .transition-arrow {
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+      padding-top: 2px;
+    }
+    .transition-content { flex: 1; }
+    .transition-content h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .transition-content p { font-size: 12.5px; color: var(--text-muted); margin: 0; }
+
+    /* STEP NUMBERS */
+    .step { display: flex; gap: 16px; margin: 20px 0; align-items: flex-start; }
+    .step-number {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-content { flex: 1; padding-top: 4px; }
+    .step-content h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .step-content p { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+    /* FAQ */
+    .faq-item { margin-bottom: 20px; }
+    .faq-item dt {
+      font-weight: 700; font-size: 14px; margin-bottom: 4px;
+      color: var(--text); padding-left: 20px; position: relative;
+    }
+    .faq-item dt::before {
+      content: "Q"; position: absolute; left: 0; top: 0;
+      color: var(--accent); font-weight: 800; font-size: 13px;
+    }
+    .faq-item dd {
+      font-size: 13px; color: var(--text-muted); padding-left: 20px;
+    }
+
+    /* LIFECYCLE DIAGRAM */
+    .lifecycle {
+      margin: 24px 0; padding: 24px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 12px;
+    }
+    .lifecycle-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .lifecycle-row:last-child { margin-bottom: 0; }
+    .lifecycle-node {
+      padding: 8px 16px; border-radius: 8px; font-size: 12px;
+      font-weight: 700; border: 2px solid; text-align: center; min-width: 100px;
+    }
+    .lifecycle-connector {
+      color: var(--text-muted); font-size: 20px; line-height: 1;
+    }
+    .lifecycle-branch {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .lifecycle-label {
+      font-size: 10px; color: var(--text-muted); text-align: center;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    /* ROLE CARDS */
+    .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+    .role-card {
+      padding: 16px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface); text-align: center;
+    }
+    .role-icon {
+      width: 40px; height: 40px; border-radius: 50%; margin: 0 auto 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: white;
+    }
+    .role-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .role-card p { font-size: 12px; color: var(--text-muted); margin: 0; }
+
+    /* FEATURE HIGHLIGHT */
+    .feature-box {
+      padding: 20px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface); margin: 16px 0;
+    }
+    .feature-box h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .feature-box p { font-size: 13px; color: var(--text-muted); }
+
+    /* FOOTER */
+    .footer {
+      margin-left: 260px; padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-muted);
+      display: flex; justify-content: space-between;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main, .footer { margin-left: 0; padding-left: 20px; padding-right: 20px; }
+      .hero h1 { font-size: 28px; }
+      .role-grid { grid-template-columns: 1fr; }
+      .lifecycle-row { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-title">Hub <span>360</span> Guia da Equipe</div>
+  <div class="topbar-links">
+    <a href="guia-cliente.html">Guia do Cliente</a>
+    <a href="guia-equipe.html" class="active">Guia da Equipe</a>
+    <a href="docs.html">Docs Tecnica</a>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-group">
+    <div class="sidebar-label">Inicio</div>
+    <a href="#bem-vindo">Bem-vindo</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Acesso</div>
+    <a href="#login">Login e acesso</a>
+    <a href="#papeis">Papeis da equipe</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Dashboard</div>
+    <a href="#dashboard">Visao geral</a>
+    <a href="#cards-status">Cards de status</a>
+    <a href="#filtros">Filtros</a>
+    <a href="#tabela">Tabela de bugs</a>
+    <a href="#ordenacao">Ordenacao</a>
+    <a href="#paginacao">Paginacao</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Bug Drawer</div>
+    <a href="#drawer">Painel lateral</a>
+    <a href="#detalhes">Detalhes do bug</a>
+    <a href="#mudar-status">Mudar status</a>
+    <a href="#transicoes">Transicoes de status</a>
+    <a href="#atribuir">Atribuir responsavel</a>
+    <a href="#notas">Notas internas</a>
+    <a href="#historico">Historico (Audit log)</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Fluxo de Trabalho</div>
+    <a href="#ciclo">Ciclo de vida completo</a>
+    <a href="#boas-praticas">Boas praticas</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Extras</div>
+    <a href="#faq">Perguntas frequentes</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero" id="bem-vindo">
+    <h1>Guia da <span>Equipe</span></h1>
+    <p>Manual completo para membros da equipe que gerenciam bugs no Hub 360. Aprenda a usar o dashboard, gerenciar status, atribuir responsaveis e colaborar com notas internas.</p>
+    <div class="badge-row">
+      <span class="badge"><span class="badge-dot" style="background:#dc2626"></span> Dashboard completo</span>
+      <span class="badge"><span class="badge-dot" style="background:#059669"></span> Gestao de status</span>
+      <span class="badge"><span class="badge-dot" style="background:#7c3aed"></span> Notas internas</span>
+      <span class="badge"><span class="badge-dot" style="background:#d97706"></span> Audit log</span>
+    </div>
+  </div>
+
+  <!-- LOGIN E ACESSO -->
+  <section id="login">
+    <h2>Login e acesso</h2>
+    <p>O dashboard e restrito a membros da equipe. Para acessar:</p>
+
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h4>Acesse a pagina de login</h4>
+        <p>Va para <code>/login</code> no navegador. Voce vera a tela de login do Hub 360.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h4>Digite suas credenciais</h4>
+        <p>Insira o email e a senha cadastrados pelo administrador. O email e o mesmo vinculado ao seu perfil na equipe.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h4>Acesse o dashboard</h4>
+        <p>Apos o login bem-sucedido, voce sera redirecionado automaticamente para o dashboard em <code>/dashboard</code>.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <div>
+        <strong>Sessao expirada?</strong> Se voce for redirecionado para o login, sua sessao expirou. Basta fazer login novamente. Suas configuracoes de filtros nao sao preservadas entre sessoes.
+      </div>
+    </div>
+  </section>
+
+  <!-- PAPEIS -->
+  <section id="papeis">
+    <h2>Papeis da equipe</h2>
+    <p>Cada membro da equipe tem um papel que define suas responsabilidades:</p>
+
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="role-icon" style="background: #2563eb;">D</div>
+        <h4>Dev (Desenvolvedor)</h4>
+        <p>Analisa bugs, identifica causas, implementa correcoes. Responsavel pelas transicoes de "Em analise" ate "Aguardando validacao".</p>
+      </div>
+      <div class="role-card">
+        <div class="role-icon" style="background: #7c3aed;">P</div>
+        <h4>PM (Product Manager)</h4>
+        <p>Gerencia prioridades, valida correcoes, fecha bugs. Pode reclassificar gravidade e redistribuir responsaveis.</p>
+      </div>
+      <div class="role-card">
+        <div class="role-icon" style="background: #059669;">A</div>
+        <h4>Admin (Administrador)</h4>
+        <p>Acesso total. Gerencia projetos, membros da equipe, e tem todas as permissoes de Dev e PM.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">&#9432;</span>
+      <div>
+        <strong>Todos os papeis tem acesso ao dashboard.</strong> A diferenca esta na responsabilidade, nao na permissao de acesso. Qualquer membro pode alterar status e atribuir bugs.
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard">
+    <h2>Dashboard</h2>
+    <p>O dashboard e a tela principal do Hub 360. Ele mostra todos os bugs reportados, com filtros e ferramentas para gerencia-los.</p>
+
+    <h3 id="cards-status">Cards de status</h3>
+    <p>No topo do dashboard, voce encontra cards com a contagem de bugs por status. Cada card mostra o numero e o nome do status:</p>
+
+    <div class="flow" style="gap: 10px;">
+      <span class="flow-step" style="background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;">Novo</span>
+      <span class="flow-step" style="background:#fefce8; color:#a16207; border-color:#fde68a;">Em analise</span>
+      <span class="flow-step" style="background:#fff7ed; color:#c2410c; border-color:#fed7aa;">Em correcao</span>
+      <span class="flow-step" style="background:#faf5ff; color:#7c3aed; border-color:#ddd6fe;">Aguardando validacao</span>
+      <span class="flow-step" style="background:#ecfdf5; color:#059669; border-color:#a7f3d0;">Resolvido</span>
+      <span class="flow-step" style="background:#f9fafb; color:#6b7280; border-color:#d1d5db;">Fechado</span>
+      <span class="flow-step" style="background:#fef2f2; color:#dc2626; border-color:#fecaca;">Reaberto</span>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">&#9432;</span>
+      <div>
+        <strong>Cards sao clicaveis.</strong> Clique em qualquer card de status para filtrar a tabela e ver somente os bugs naquele status. Clique novamente para remover o filtro.
+      </div>
+    </div>
+
+    <h3 id="filtros">Filtros</h3>
+    <p>Abaixo dos cards, uma barra de filtros permite refinar a visualizacao:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Filtro</th>
+            <th>Descricao</th>
+            <th>Como usar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Busca por titulo</strong></td>
+            <td>Pesquisa textual no titulo dos bugs</td>
+            <td>Digite no campo de busca. A pesquisa e automatica apos parar de digitar (300ms de delay).</td>
+          </tr>
+          <tr>
+            <td><strong>Projeto</strong></td>
+            <td>Filtra por projeto especifico</td>
+            <td>Selecione no dropdown "Todos os projetos". Util quando voce gerencia multiplos projetos.</td>
+          </tr>
+          <tr>
+            <td><strong>Gravidade</strong></td>
+            <td>Filtra por nivel de gravidade</td>
+            <td>Selecione no dropdown "Todas as gravidades": Critica, Alta, Media ou Baixa.</td>
+          </tr>
+          <tr>
+            <td><strong>Responsavel</strong></td>
+            <td>Filtra por membro da equipe atribuido</td>
+            <td>Selecione no dropdown "Todos os responsaveis". Ideal para ver seus proprios bugs.</td>
+          </tr>
+          <tr>
+            <td><strong>Status</strong></td>
+            <td>Filtra por status do bug</td>
+            <td>Clique nos cards de status no topo, ou sera automaticamente filtrado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Quando algum filtro esta ativo, aparece o botao <strong>"Limpar filtros"</strong> que remove todos os filtros de uma vez.</p>
+
+    <h3 id="tabela">Tabela de bugs</h3>
+    <p>A tabela principal mostra os bugs com as seguintes colunas:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Coluna</th>
+            <th>Descricao</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>#</strong></td>
+            <td>Numero sequencial unico do bug (ex: 1, 2, 42). Gerado automaticamente.</td>
+          </tr>
+          <tr>
+            <td><strong>Status</strong></td>
+            <td>Status atual do bug, exibido como pill colorida: <span class="status-pill s-new">Novo</span> <span class="status-pill s-analyzing">Em analise</span> <span class="status-pill s-fixing">Em correcao</span> etc.</td>
+          </tr>
+          <tr>
+            <td><strong>Gravidade</strong></td>
+            <td>Nivel de impacto: <span class="status-pill sev-critical">Critica</span> <span class="status-pill sev-high">Alta</span> <span class="status-pill sev-medium">Media</span> <span class="status-pill sev-low">Baixa</span></td>
+          </tr>
+          <tr>
+            <td><strong>Titulo</strong></td>
+            <td>Descricao resumida do bug, conforme preenchida pelo reporter. Truncado se muito longo.</td>
+          </tr>
+          <tr>
+            <td><strong>Projeto</strong></td>
+            <td>Nome do projeto ao qual o bug pertence, exibido como tag cinza.</td>
+          </tr>
+          <tr>
+            <td><strong>Responsavel</strong></td>
+            <td>Membro da equipe atribuido ao bug. Mostra "-" se ninguem foi atribuido.</td>
+          </tr>
+          <tr>
+            <td><strong>Data</strong></td>
+            <td>Data de criacao do bug, em formato relativo (ex: "ha 2 horas", "ontem", "ha 3 dias").</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>Clique em qualquer linha</strong> da tabela para abrir o painel lateral (Bug Drawer) com os detalhes completos do bug.</p>
+
+    <h3 id="ordenacao">Ordenacao</h3>
+    <p>Clique no cabecalho de uma coluna para ordenar a tabela por aquela coluna:</p>
+    <ul>
+      <li><strong>Colunas ordenaveis:</strong> #, Status, Gravidade, Titulo, Data</li>
+      <li><strong>Primeiro clique:</strong> ordena em ordem decrescente (mais recente / mais grave primeiro)</li>
+      <li><strong>Segundo clique:</strong> inverte para ordem crescente</li>
+      <li>Uma seta ao lado do nome da coluna indica a direcao atual da ordenacao</li>
+      <li>Por padrao, a tabela e ordenada por data de criacao (mais recentes primeiro)</li>
+    </ul>
+
+    <h3 id="paginacao">Paginacao</h3>
+    <p>A tabela exibe ate <strong>30 bugs por pagina</strong>. Se houver mais, a barra de paginacao aparece no rodape da tabela com:</p>
+    <ul>
+      <li>Contagem total de bugs (ex: "142 bugs no total")</li>
+      <li>Botoes "Anterior" e "Proximo" para navegar entre paginas</li>
+      <li>Indicador de pagina atual (ex: "3 / 5")</li>
+    </ul>
+  </section>
+
+  <!-- BUG DRAWER -->
+  <section id="drawer">
+    <h2>Bug Drawer (Painel Lateral)</h2>
+    <p>Ao clicar em qualquer bug na tabela, um painel desliza da direita mostrando todos os detalhes. O fundo escurece para manter o foco no bug selecionado.</p>
+
+    <h3 id="detalhes">Detalhes do bug</h3>
+    <p>O cabecalho do drawer mostra:</p>
+    <ul>
+      <li><strong>Numero:</strong> Ex: #42</li>
+      <li><strong>Status:</strong> Pill colorida com o status atual</li>
+      <li><strong>Gravidade:</strong> Pill colorida com o nivel</li>
+      <li><strong>Titulo:</strong> Titulo completo do bug</li>
+      <li><strong>Reporter:</strong> Nome de quem reportou (ou "Anonimo" se nao informou)</li>
+      <li><strong>Data:</strong> Quando foi reportado, em formato relativo</li>
+      <li><strong>Dispositivo:</strong> Sistema/aparelho do reporter (se detectado)</li>
+    </ul>
+
+    <p>O corpo do drawer mostra quatro blocos de informacao preenchidos pelo reporter:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Bloco</th>
+            <th>O que contem</th>
+            <th>Para que serve</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Onde encontrou</strong></td>
+            <td>Tela ou local do problema</td>
+            <td>Permite navegar ate o mesmo ponto no app para investigar</td>
+          </tr>
+          <tr>
+            <td><strong>O que fez</strong></td>
+            <td>Passos seguidos ate o bug aparecer</td>
+            <td>Permite reproduzir o bug seguindo os mesmos passos</td>
+          </tr>
+          <tr>
+            <td><strong>O que esperava</strong></td>
+            <td>Comportamento esperado</td>
+            <td>Define o que seria o "correto" para validar a correcao</td>
+          </tr>
+          <tr>
+            <td><strong>O que aconteceu</strong></td>
+            <td>Comportamento real (o bug)</td>
+            <td>Descreve o sintoma exato do problema</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Evidencias (Anexos)</h4>
+    <p>Abaixo dos detalhes, as evidencias sao exibidas:</p>
+    <ul>
+      <li><strong>Imagens:</strong> Exibidas diretamente no painel, com borda arredondada</li>
+      <li><strong>Videos:</strong> Player embutido com controles (play, pause, volume)</li>
+      <li><strong>Outros arquivos:</strong> Link para download</li>
+    </ul>
+
+    <h3 id="mudar-status">Como mudar o status</h3>
+    <p>No topo do conteudo do drawer, voce encontra dois dropdowns lado a lado:</p>
+
+    <div class="feature-box">
+      <h4>Dropdown de Status</h4>
+      <p>Selecione o novo status no dropdown. A alteracao e salva imediatamente. O sistema registra automaticamente quem alterou, quando e de qual status para qual no historico (audit log).</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <div>
+        <strong>Conflito de versao:</strong> Se outra pessoa alterou o bug ao mesmo tempo, voce vera a mensagem "Erro ao atualizar". Feche e reabra o bug para ver as alteracoes mais recentes.
+      </div>
+    </div>
+
+    <h3 id="transicoes">Transicoes de status</h3>
+    <p>Cada transicao de status tem um significado especifico. Siga o fluxo recomendado:</p>
+
+    <div class="transition-card">
+      <div class="transition-arrow">
+        <span class="status-pill s-new">Novo</span>
+        <span style="color:var(--text-muted);">&rarr;</span>
+        <span class="status-pill s-analyzing">Em analise</span>
+      </div>
+      <div class="transition-content">
+        <h4>Iniciar investigacao</h4>
+        <p>Um dev comeca a investigar o bug. Leu os detalhes, viu as evidencias e vai tentar reproduzir. <strong>Quem faz:</strong> Dev atribuido.</p>
+      </div>
+    </div>
+
+    <div class="transition-card">
+      <div class="transition-arrow">
+        <span class="status-pill s-analyzing">Em analise</span>
+        <span style="color:var(--text-muted);">&rarr;</span>
+        <span class="status-pill s-fixing">Em correcao</span>
+      </div>
+      <div class="transition-content">
+        <h4>Causa identificada, corrigindo</h4>
+        <p>O dev encontrou a causa raiz do problema e esta implementando a correcao. <strong>Quem faz:</strong> Dev que esta trabalhando no fix.</p>
+      </div>
+    </div>
+
+    <div class="transition-card">
+      <div class="transition-arrow">
+        <span class="status-pill s-fixing">Em correcao</span>
+        <span style="color:var(--text-muted);">&rarr;</span>
+        <span class="status-pill s-awaiting">Ag. validacao</span>
+      </div>
+      <div class="transition-content">
+        <h4>Correcao pronta, aguardando QA</h4>
+        <p>O dev terminou a correcao e precisa que outra pessoa (QA ou PM) valide se o problema foi realmente resolvido. <strong>Quem faz:</strong> Dev que corrigiu.</p>
+      </div>
+    </div>
+
+    <div class="transition-card">
+      <div class="transition-arrow">
+        <span class="status-pill s-awaiting">Ag. validacao</span>
+        <span style="color:var(--text-muted);">&rarr;</span>
+        <span class="status-pill s-resolved">Resolvido</span>
+      </div>
+      <div class="transition-content">
+        <h4>Validacao bem-sucedida</h4>
+        <p>O QA ou PM testou e confirmou que a correcao funciona. O bug esta efetivamente resolvido. <strong>Quem faz:</strong> QA ou PM que validou.</p>
+      </div>
+    </div>
+
+    <div class="transition-card">
+      <div class="transition-arrow">
+        <span class="status-pill s-resolved">Resolvido</span>
+        <span style="color:var(--text-muted);">&rarr;</span>
+        <span class="status-pill s-closed">Fechado</span>
+      </div>
+      <div class="transition-content">
+        <h4>Bug oficialmente encerrado</h4>
+        <p>O PM fecha oficialmente o bug. Isso indica que o ciclo esta completo e a correcao foi incluida em uma release. <strong>Quem faz:</strong> PM ou Admin.</p>
+      </div>
+    </div>
+
+    <div class="transition-card" style="border-color: #fecaca;">
+      <div class="transition-arrow">
+        <span class="status-pill s-awaiting">Qualquer</span>
+        <span style="color:#dc2626;">&rarr;</span>
+        <span class="status-pill s-reopened">Reaberto</span>
+      </div>
+      <div class="transition-content">
+        <h4>Validacao falhou ou bug voltou</h4>
+        <p>A correcao nao funcionou, ou o bug reapareceu em outra situacao. O bug volta ao ciclo de trabalho. <strong>Quem faz:</strong> Quem detectou que o bug persiste. Adicione uma nota explicando por que reabriu.</p>
+      </div>
+    </div>
+
+    <h3 id="atribuir">Atribuir responsavel</h3>
+
+    <div class="feature-box">
+      <h4>Dropdown de Responsavel</h4>
+      <p>No dropdown ao lado do status, selecione o membro da equipe responsavel pelo bug. Apenas membros ativos aparecem na lista. Selecione "Ninguem" para remover a atribuicao. A alteracao e salva e registrada no historico imediatamente.</p>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">&#10003;</span>
+      <div>
+        <strong>Dica:</strong> Use o filtro "Responsavel" no dashboard para ver rapidamente todos os bugs atribuidos a voce. Isso funciona como sua lista de tarefas pessoal.
+      </div>
+    </div>
+
+    <h3 id="notas">Notas internas</h3>
+    <p>Notas internas sao comentarios visiveis apenas para a equipe. O reporter (cliente) <strong>nao ve</strong> essas notas.</p>
+
+    <h4>Como adicionar uma nota</h4>
+    <ol>
+      <li>No drawer do bug, role ate a secao "Notas internas"</li>
+      <li>Digite sua mensagem no campo de texto</li>
+      <li>Clique em "Enviar" ou pressione Enter</li>
+    </ol>
+
+    <h4>Quando usar notas</h4>
+    <ul>
+      <li><strong>Analise tecnica:</strong> "Reproduzido. O problema esta no handler de pagamento que nao valida o campo X."</li>
+      <li><strong>Contexto adicional:</strong> "Esse bug pode estar relacionado ao #38."</li>
+      <li><strong>Decisoes:</strong> "PM decidiu priorizar esse bug para o sprint atual."</li>
+      <li><strong>Bloqueios:</strong> "Aguardando deploy do servico Y para testar a correcao."</li>
+      <li><strong>Validacao:</strong> "Testei no Android e iOS. Correcao funcionou em ambos."</li>
+      <li><strong>Rejeicao:</strong> "Ao reabrir: a correcao funcionou para o caso descrito, mas o mesmo erro ocorre ao usar dados especiais (acentos)."</li>
+    </ul>
+
+    <p>Cada nota mostra o <strong>nome do autor</strong> e a <strong>data</strong> de criacao.</p>
+
+    <h3 id="historico">Historico (Audit Log)</h3>
+    <p>No final do drawer, a secao "Historico" mostra um registro cronologico de tudo que aconteceu com o bug:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Acao registrada</th>
+            <th>O que mostra</th>
+            <th>Exemplo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Mudanca de status</strong></td>
+            <td>Quem alterou, status anterior e novo</td>
+            <td>"Carlos alterou status de <span class="status-pill s-new">Novo</span> para <span class="status-pill s-analyzing">Em analise</span>"</td>
+          </tr>
+          <tr>
+            <td><strong>Atribuicao</strong></td>
+            <td>Quem atribuiu a um membro da equipe</td>
+            <td>"Ana atribuiu a um membro da equipe"</td>
+          </tr>
+          <tr>
+            <td><strong>Nota adicionada</strong></td>
+            <td>Quem adicionou uma nota interna</td>
+            <td>"Carlos adicionou uma nota"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Cada entrada mostra a <strong>data relativa</strong> (ex: "ha 2h", "ontem") e o <strong>nome do ator</strong> (ou "Sistema" para acoes automaticas). O historico e gerado automaticamente e nao pode ser editado ou excluido.</p>
+  </section>
+
+  <!-- CICLO DE VIDA COMPLETO -->
+  <section id="ciclo">
+    <h2>Ciclo de vida completo de um bug</h2>
+    <p>O diagrama abaixo mostra o fluxo completo que um bug percorre desde o report ate o fechamento:</p>
+
+    <div class="lifecycle">
+      <!-- Main flow -->
+      <div class="lifecycle-label" style="margin-bottom: 16px;">Fluxo principal</div>
+      <div class="lifecycle-row">
+        <div class="lifecycle-node" style="background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;">
+          Novo
+        </div>
+        <span class="lifecycle-connector">&rarr;</span>
+        <div class="lifecycle-node" style="background:#fefce8; color:#a16207; border-color:#fde68a;">
+          Em analise
+        </div>
+        <span class="lifecycle-connector">&rarr;</span>
+        <div class="lifecycle-node" style="background:#fff7ed; color:#c2410c; border-color:#fed7aa;">
+          Em correcao
+        </div>
+        <span class="lifecycle-connector">&rarr;</span>
+        <div class="lifecycle-node" style="background:#faf5ff; color:#7c3aed; border-color:#ddd6fe;">
+          Ag. validacao
+        </div>
+        <span class="lifecycle-connector">&rarr;</span>
+        <div class="lifecycle-node" style="background:#ecfdf5; color:#059669; border-color:#a7f3d0;">
+          Resolvido
+        </div>
+        <span class="lifecycle-connector">&rarr;</span>
+        <div class="lifecycle-node" style="background:#f9fafb; color:#6b7280; border-color:#d1d5db;">
+          Fechado
+        </div>
+      </div>
+
+      <!-- Reopen branch -->
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border);">
+        <div class="lifecycle-label" style="margin-bottom: 12px;">Se a validacao falhar</div>
+        <div class="lifecycle-row">
+          <div class="lifecycle-node" style="background:#faf5ff; color:#7c3aed; border-color:#ddd6fe;">
+            Ag. validacao
+          </div>
+          <span class="lifecycle-connector" style="color:#dc2626;">&rarr;</span>
+          <div class="lifecycle-node" style="background:#fef2f2; color:#dc2626; border-color:#fecaca;">
+            Reaberto
+          </div>
+          <span class="lifecycle-connector">&rarr;</span>
+          <div class="lifecycle-node" style="background:#fefce8; color:#a16207; border-color:#fde68a;">
+            Em analise
+          </div>
+          <span class="lifecycle-connector">&rarr;</span>
+          <span style="font-size:12px; color:var(--text-muted); font-style:italic;">...repete o ciclo</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Cenario tipico: bug critico no app</h3>
+    <ol>
+      <li>Cliente reporta: "App fecha ao abrir a camera no perfil" com gravidade <span class="status-pill sev-critical">Critica</span>. Bug entra como <span class="status-pill s-new">Novo</span>.</li>
+      <li>PM ve no dashboard, atribui ao dev Carlos e muda para <span class="status-pill s-analyzing">Em analise</span>.</li>
+      <li>Carlos reproduz o bug, identifica que e um problema de permissao de camera no Android 14. Muda para <span class="status-pill s-fixing">Em correcao</span>. Adiciona nota: "Permissao de camera nao solicitada corretamente no Android 14+."</li>
+      <li>Carlos implementa a correcao e muda para <span class="status-pill s-awaiting">Aguardando validacao</span>. Adiciona nota: "Fix deployado em staging. Testar em Android 14."</li>
+      <li>Ana (QA) testa em Samsung A34/Android 14. Funciona. Muda para <span class="status-pill s-resolved">Resolvido</span>. Nota: "Testado em Android 14 e 13, ambos funcionando."</li>
+      <li>PM confirma e muda para <span class="status-pill s-closed">Fechado</span> apos incluir na release.</li>
+    </ol>
+  </section>
+
+  <!-- BOAS PRATICAS -->
+  <section id="boas-praticas">
+    <h2>Boas praticas</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>Triagem rapida</h4>
+        <p>Bugs novos devem ser triados (analisados e atribuidos) em ate 24 horas. Bugs criticos devem ser triados imediatamente.</p>
+      </div>
+      <div class="card">
+        <h4>Sempre atribua um responsavel</h4>
+        <p>Bugs sem responsavel se perdem. Ao mudar o status para "Em analise", sempre atribua alguem.</p>
+      </div>
+      <div class="card">
+        <h4>Documente nas notas</h4>
+        <p>Ao investigar um bug, registre suas descobertas em notas. Isso ajuda outros membros e cria um historico valioso.</p>
+      </div>
+      <div class="card">
+        <h4>Nao pule etapas</h4>
+        <p>Nao va de "Novo" direto para "Resolvido". Cada etapa tem um proposito e garante que o bug foi devidamente analisado, corrigido e validado.</p>
+      </div>
+      <div class="card">
+        <h4>Valide com cuidado</h4>
+        <p>Ao validar uma correcao, teste o cenario exato descrito no report. Teste tambem cenarios similares para garantir que nao houve regressao.</p>
+      </div>
+      <div class="card">
+        <h4>Reabra com contexto</h4>
+        <p>Ao reabrir um bug, sempre adicione uma nota explicando por que. Descreva o que testou e o que ainda falha.</p>
+      </div>
+      <div class="card">
+        <h4>Use filtros a seu favor</h4>
+        <p>Comece o dia filtrando por "Responsavel: Voce" para ver seus bugs pendentes. Filtre por "Critica" para ver os mais urgentes.</p>
+      </div>
+      <div class="card">
+        <h4>Feche bugs resolvidos</h4>
+        <p>Nao deixe bugs em "Resolvido" para sempre. Apos confirmar que a correcao foi para producao, feche-os.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <h2>Perguntas frequentes</h2>
+
+    <dl>
+      <div class="faq-item">
+        <dt>Posso excluir um bug?</dt>
+        <dd>Nao. Bugs nao podem ser excluidos para manter a rastreabilidade completa. Se um bug for invalido ou duplicado, mude o status para "Fechado" e adicione uma nota explicando.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>O cliente consegue ver as notas internas?</dt>
+        <dd>Nao. Notas internas sao visiveis apenas para membros logados no dashboard. O reporter/cliente nao tem acesso ao dashboard.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Posso mudar a gravidade de um bug?</dt>
+        <dd>A gravidade e definida pelo reporter no momento do envio e nao pode ser alterada pelo dashboard atualmente. Se discordar da classificacao, registre em uma nota interna.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>O que acontece se duas pessoas editarem o mesmo bug?</dt>
+        <dd>O sistema usa controle de versao otimista. Se voce tentar alterar um bug que outra pessoa ja alterou, vera uma mensagem de erro. Feche e reabra o bug para ver as alteracoes e tente novamente.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Posso filtrar por multiplos status ao mesmo tempo?</dt>
+        <dd>Atualmente, os cards de status filtram por um status de cada vez. Para ver bugs em multiplos status, remova o filtro de status e use a ordenacao por status na tabela.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Como vejo apenas meus bugs?</dt>
+        <dd>Use o filtro "Responsavel" no dashboard e selecione seu nome. A tabela mostrara apenas os bugs atribuidos a voce.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>O historico pode ser editado?</dt>
+        <dd>Nao. O audit log e automatico e imutavel. Cada alteracao de status, atribuicao e nota e registrada permanentemente.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Como compartilho o link de report com o cliente?</dt>
+        <dd>O link e no formato <code>/report/slug-do-projeto</code>. Copie o URL completo e envie ao cliente. Ele nao precisa de login.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>O que significa "Anonimo" no nome do reporter?</dt>
+        <dd>Significa que o reporter nao preencheu o campo de nome (que e opcional) no formulario de report.</dd>
+      </div>
+
+      <div class="faq-item">
+        <dt>Minha sessao expirou. Perdi as configuracoes de filtro?</dt>
+        <dd>Sim. Filtros sao mantidos apenas durante a sessao ativa. Apos novo login, o dashboard inicia com a visualizacao padrao (sem filtros, ordenado por data).</dd>
+      </div>
+    </dl>
+  </section>
+
+</main>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>Hub 360 Bug Tracker</span>
+  <span>Guia da Equipe v1.0</span>
+</div>
+
+</body>
+</html>
