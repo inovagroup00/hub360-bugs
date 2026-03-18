@@ -26,6 +26,7 @@ interface BugDrawerProps {
   teamMembers: TeamMember[];
   onClose: () => void;
   onUpdate: () => void;
+  isClient?: boolean;
 }
 
 export function BugDrawer({
@@ -33,6 +34,7 @@ export function BugDrawer({
   teamMembers,
   onClose,
   onUpdate,
+  isClient = false,
 }: BugDrawerProps) {
   const [bug, setBug] = useState<BugDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -136,8 +138,20 @@ export function BugDrawer({
                 <p className="text-xs text-gray-400 mt-1">
                   {bug.reporter_name || "Anonimo"} &middot;{" "}
                   {formatRelativeDate(bug.created_at)}
-                  {bug.device_info && ` &middot; ${bug.device_info}`}
+                  {bug.device_info && ` \u00B7 ${bug.device_info}`}
                 </p>
+                {/* Show resolved date for clients when status is resolved/closed */}
+                {isClient && (bug.status === "resolved" || bug.status === "closed") && (
+                  <p className="text-xs text-green-600 mt-1">
+                    Resolvido em {new Date(bug.updated_at).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                )}
               </div>
               <button
                 onClick={onClose}
@@ -151,50 +165,63 @@ export function BugDrawer({
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Controls */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={bug.status}
-                    onChange={(e) =>
-                      updateBug({ status: e.target.value as BugStatus })
-                    }
-                    disabled={updatingStatus}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-                  >
-                    {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-                      <option key={key} value={key}>
-                        {cfg.label}
-                      </option>
-                    ))}
-                  </select>
+              {/* Controls - different for client vs internal */}
+              {isClient ? (
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Status
+                    </label>
+                    <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                      <StatusBadge status={bug.status} />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">
-                    Responsavel
-                  </label>
-                  <select
-                    value={bug.assigned_to || ""}
-                    onChange={(e) =>
-                      updateBug({
-                        assigned_to: e.target.value || null,
-                      })
-                    }
-                    disabled={updatingStatus}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-                  >
-                    <option value="">Ninguem</option>
-                    {teamMembers.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Status
+                    </label>
+                    <select
+                      value={bug.status}
+                      onChange={(e) =>
+                        updateBug({ status: e.target.value as BugStatus })
+                      }
+                      disabled={updatingStatus}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    >
+                      {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
+                        <option key={key} value={key}>
+                          {cfg.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Responsavel
+                    </label>
+                    <select
+                      value={bug.assigned_to || ""}
+                      onChange={(e) =>
+                        updateBug({
+                          assigned_to: e.target.value || null,
+                        })
+                      }
+                      disabled={updatingStatus}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    >
+                      <option value="">Ninguem</option>
+                      {teamMembers.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Details */}
               <div className="space-y-4">
@@ -248,64 +275,66 @@ export function BugDrawer({
                 </div>
               )}
 
-              {/* Notes */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                  Notas internas
-                </h3>
-                {bug.notes && bug.notes.length > 0 ? (
-                  <div className="space-y-2 mb-3">
-                    {bug.notes.map((note) => (
-                      <div
-                        key={note.id}
-                        className="bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100"
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-gray-600">
-                            {note.author?.name || "Desconhecido"}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {formatRelativeDate(note.created_at)}
-                          </span>
+              {/* Notes - hidden for clients */}
+              {!isClient && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                    Notas internas
+                  </h3>
+                  {bug.notes && bug.notes.length > 0 ? (
+                    <div className="space-y-2 mb-3">
+                      {bug.notes.map((note) => (
+                        <div
+                          key={note.id}
+                          className="bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-gray-600">
+                              {note.author?.name || "Desconhecido"}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {formatRelativeDate(note.created_at)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                            {note.content}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                          {note.content}
-                        </p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 mb-3">
+                      Nenhuma nota ainda
+                    </p>
+                  )}
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      placeholder="Adicionar nota..."
+                      className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          addNote();
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={addNote}
+                      disabled={savingNote || !noteText.trim()}
+                      className="px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                    >
+                      Enviar
+                    </button>
                   </div>
-                ) : (
-                  <p className="text-sm text-gray-400 mb-3">
-                    Nenhuma nota ainda
-                  </p>
-                )}
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={noteText}
-                    onChange={(e) => setNoteText(e.target.value)}
-                    placeholder="Adicionar nota..."
-                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        addNote();
-                      }
-                    }}
-                  />
-                  <button
-                    onClick={addNote}
-                    disabled={savingNote || !noteText.trim()}
-                    className="px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
-                  >
-                    Enviar
-                  </button>
                 </div>
-              </div>
+              )}
 
-              {/* Audit log */}
-              {bug.audit_log && bug.audit_log.length > 0 && (
+              {/* Audit log - hidden for clients */}
+              {!isClient && bug.audit_log && bug.audit_log.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">
                     Historico

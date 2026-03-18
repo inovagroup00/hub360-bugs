@@ -10,7 +10,7 @@ import {
   type Severity,
 } from "@/types";
 
-// ─── Types ───────────────────────────────────────────────────
+// --- Types ---
 interface ReportData {
   total_bugs: number;
   period_bugs: number;
@@ -39,7 +39,7 @@ interface ResolvedBug {
   resolution_hours: number;
 }
 
-// ─── Color helpers ───────────────────────────────────────────
+// --- Color helpers ---
 const STATUS_COLORS: Record<string, string> = {
   new: "#3b82f6",
   analyzing: "#eab308",
@@ -63,7 +63,7 @@ const CHART_COLORS = [
   "#6b7280", "#14b8a6",
 ];
 
-// ─── SVG Chart Components ────────────────────────────────────
+// --- SVG Chart Components ---
 
 function DonutChart({
   data,
@@ -347,7 +347,7 @@ function formatHours(hours: number): string {
   return `${days}d`;
 }
 
-// ─── Loading skeleton ────────────────────────────────────────
+// --- Loading skeleton ---
 function Skeleton() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -374,7 +374,7 @@ function Skeleton() {
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────
+// --- Main Page ---
 export default function ReportsPage() {
   const router = useRouter();
   const [data, setData] = useState<ReportData | null>(null);
@@ -386,13 +386,49 @@ export default function ReportsPage() {
   const [projectId, setProjectId] = useState("");
   const [teamMemberId, setTeamMemberId] = useState("");
 
-  // Auth check
+  // Client role detection
+  const user = getUser();
+  const isClientRole = user?.team_member?.role === "client";
+  const clientProjectId = isClientRole ? user?.team_member?.project_id : null;
+  const [clientProjectName, setClientProjectName] = useState<string | null>(null);
+
+  // Auth check + client project validation
   useEffect(() => {
     const session = getSession();
     if (!session) {
       router.push("/login");
+      return;
     }
-  }, [router]);
+    if (isClientRole && !clientProjectId) {
+      localStorage.removeItem("session");
+      localStorage.removeItem("user");
+      router.push("/login");
+    }
+  }, [router, isClientRole, clientProjectId]);
+
+  // Load client project name
+  useEffect(() => {
+    if (!isClientRole || !clientProjectId) return;
+    const session = getSession();
+    if (!session) return;
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+    fetch(`${supabaseUrl}/rest/v1/projects?select=name&id=eq.${clientProjectId}`, {
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setClientProjectName(data[0].name);
+        }
+      })
+      .catch(() => {});
+  }, [isClientRole, clientProjectId]);
 
   const getDateRange = useCallback((): { from: string; to: string } => {
     const now = new Date();
@@ -419,8 +455,18 @@ export default function ReportsPage() {
     const params = new URLSearchParams();
     params.set("date_from", from);
     params.set("date_to", to);
-    if (projectId) params.set("project_id", projectId);
-    if (teamMemberId) params.set("team_member_id", teamMemberId);
+
+    // For clients, always filter by their project
+    if (isClientRole && clientProjectId) {
+      params.set("project_id", clientProjectId);
+    } else if (projectId) {
+      params.set("project_id", projectId);
+    }
+
+    // Don't send team_member_id for clients
+    if (!isClientRole && teamMemberId) {
+      params.set("team_member_id", teamMemberId);
+    }
 
     try {
       const res = await fetch(`/api/reports?${params.toString()}`, {
@@ -446,13 +492,11 @@ export default function ReportsPage() {
     }
 
     setLoading(false);
-  }, [getDateRange, projectId, teamMemberId]);
+  }, [getDateRange, projectId, teamMemberId, isClientRole, clientProjectId]);
 
   useEffect(() => {
     fetchReport();
   }, [fetchReport]);
-
-  const user = getUser();
 
   if (loading && !data) return <Skeleton />;
 
@@ -474,7 +518,15 @@ export default function ReportsPage() {
             </div>
             <span className="font-bold text-gray-900">Hub 360</span>
             <span className="text-gray-300">|</span>
-            <span className="text-sm text-gray-500">Relatorios</span>
+            {isClientRole && clientProjectName ? (
+              <>
+                <span className="text-sm font-medium text-gray-700">{clientProjectName}</span>
+                <span className="text-gray-300">|</span>
+                <span className="text-sm text-gray-500">Relatorios</span>
+              </>
+            ) : (
+              <span className="text-sm text-gray-500">Relatorios</span>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -506,7 +558,9 @@ export default function ReportsPage() {
       <div className="px-6 py-6">
         {/* Page title for print */}
         <div className="hidden print:block mb-6">
-          <h1 className="text-xl font-bold text-gray-900">Hub 360 - Relatorio Gerencial</h1>
+          <h1 className="text-xl font-bold text-gray-900">
+            Hub 360 - Relatorio {isClientRole && clientProjectName ? `- ${clientProjectName}` : "Gerencial"}
+          </h1>
           <p className="text-sm text-gray-500">
             Periodo: {data ? formatDateBR(data.date_from) : ""} a {data ? formatDateBR(data.date_to) : ""}
           </p>
@@ -534,35 +588,40 @@ export default function ReportsPage() {
             </button>
           ))}
 
-          <span className="text-gray-300 mx-1">|</span>
+          {/* Hide project and team member filters for clients */}
+          {!isClientRole && (
+            <>
+              <span className="text-gray-300 mx-1">|</span>
 
-          <select
-            value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
-            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-          >
-            <option value="">Todos os projetos</option>
-            {(data?.projects || []).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+              <select
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+                className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              >
+                <option value="">Todos os projetos</option>
+                {(data?.projects || []).map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
 
-          <select
-            value={teamMemberId}
-            onChange={(e) => setTeamMemberId(e.target.value)}
-            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-          >
-            <option value="">Todos os membros</option>
-            {(data?.team_members || []).map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+              <select
+                value={teamMemberId}
+                onChange={(e) => setTeamMemberId(e.target.value)}
+                className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              >
+                <option value="">Todos os membros</option>
+                {(data?.team_members || []).map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
 
-          {(projectId || teamMemberId || preset !== "90d") && (
+          {((!isClientRole && (projectId || teamMemberId)) || preset !== "90d") && (
             <button
               onClick={() => {
                 setPreset("90d");
@@ -655,9 +714,12 @@ export default function ReportsPage() {
                 <LineChart data={data.weekly_trend} />
               </ChartCard>
 
-              <ChartCard title="Bugs por Projeto">
-                <HorizontalBarChart data={data.by_project} />
-              </ChartCard>
+              {/* Hide project chart for clients (redundant - single project) */}
+              {!isClientRole && (
+                <ChartCard title="Bugs por Projeto">
+                  <HorizontalBarChart data={data.by_project} />
+                </ChartCard>
+              )}
             </div>
 
             {/* Resolved bugs table */}
@@ -676,9 +738,15 @@ export default function ReportsPage() {
                     <tr className="border-b border-gray-100">
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-full">Titulo</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Projeto</th>
+                      {/* Hide Projeto column for clients (redundant) */}
+                      {!isClientRole && (
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Projeto</th>
+                      )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gravidade</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resolvido por</th>
+                      {/* Hide Resolvido por for clients (internal info) */}
+                      {!isClientRole && (
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resolvido por</th>
+                      )}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criado em</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resolvido em</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tempo</th>
@@ -687,7 +755,7 @@ export default function ReportsPage() {
                   <tbody>
                     {data.resolved_bugs.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-12 text-center text-gray-400 text-sm">
+                        <td colSpan={isClientRole ? 6 : 8} className="py-12 text-center text-gray-400 text-sm">
                           Nenhum bug resolvido neste periodo
                         </td>
                       </tr>
@@ -702,17 +770,21 @@ export default function ReportsPage() {
                               {bug.title}
                             </div>
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
-                              {bug.project_name}
-                            </span>
-                          </td>
+                          {!isClientRole && (
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
+                                {bug.project_name}
+                              </span>
+                            </td>
+                          )}
                           <td className="px-4 py-3 whitespace-nowrap">
                             <SeverityInline severity={bug.severity} />
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                            {bug.assigned_to_name}
-                          </td>
+                          {!isClientRole && (
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                              {bug.assigned_to_name}
+                            </td>
+                          )}
                           <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
                             {formatDateTimeBR(bug.created_at)}
                           </td>
@@ -736,7 +808,7 @@ export default function ReportsPage() {
   );
 }
 
-// ─── Small helper components ─────────────────────────────────
+// --- Small helper components ---
 
 function MetricCard({
   label,

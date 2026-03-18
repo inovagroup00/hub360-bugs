@@ -26,12 +26,41 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if user is a client and get their project_id
+    const { data: teamMember } = await supabase
+      .from("team_members")
+      .select("id, role, project_id")
+      .eq("auth_user_id", user.id)
+      .single();
+
+    const isClientUser = teamMember?.role === "client";
+    const clientProjectId = isClientUser ? teamMember?.project_id : null;
+
+    // If client has no project_id, deny access
+    if (isClientUser && !clientProjectId) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Utilizador cliente sem projeto associado" } },
+        { status: 403 }
+      );
+    }
+
     // Parse query params
     const url = new URL(request.url);
     const dateFromParam = url.searchParams.get("date_from");
     const dateToParam = url.searchParams.get("date_to");
-    const projectId = url.searchParams.get("project_id");
+    let projectId = url.searchParams.get("project_id");
     const teamMemberId = url.searchParams.get("team_member_id");
+
+    // Security: force client users to only query their own project
+    if (isClientUser) {
+      if (projectId && projectId !== clientProjectId) {
+        return NextResponse.json(
+          { error: { code: "FORBIDDEN", message: "Acesso negado a este projeto" } },
+          { status: 403 }
+        );
+      }
+      projectId = clientProjectId;
+    }
 
     // Default dates: 90 days ago to today
     const now = new Date();

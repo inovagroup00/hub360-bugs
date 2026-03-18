@@ -9,7 +9,7 @@ export type BugStatus =
   | "closed"
   | "reopened";
 
-export type TeamRole = "dev" | "pm" | "admin";
+export type TeamRole = "dev" | "pm" | "admin" | "client";
 
 export interface Project {
   id: string;
@@ -27,6 +27,7 @@ export interface TeamMember {
   email: string;
   avatar_url: string | null;
   role: TeamRole;
+  project_id: string | null;
   is_active: boolean;
   created_at: string;
 }

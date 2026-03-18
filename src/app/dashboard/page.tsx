@@ -40,13 +40,25 @@ export default function DashboardPage() {
   // Drawer
   const [selectedBugId, setSelectedBugId] = useState<string | null>(null);
 
-  // Auth check
+  // Client role detection
+  const user = getUser();
+  const isClientRole = user?.team_member?.role === "client";
+  const clientProjectId = isClientRole ? user?.team_member?.project_id : null;
+
+  // Auth check + client project validation
   useEffect(() => {
     const session = getSession();
     if (!session) {
       router.push("/login");
+      return;
     }
-  }, [router]);
+    // If client user has no project_id, redirect to login with error
+    if (isClientRole && !clientProjectId) {
+      localStorage.removeItem("session");
+      localStorage.removeItem("user");
+      router.push("/login");
+    }
+  }, [router, isClientRole, clientProjectId]);
 
   // Load projects and team members
   useEffect(() => {
@@ -60,19 +72,33 @@ export default function DashboardPage() {
       Authorization: `Bearer ${session.access_token}`,
     };
 
-    fetch(`${supabaseUrl}/rest/v1/projects?select=*&order=name`, { headers })
-      .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data)) setProjects(data); })
-      .catch(() => {});
+    // Only load projects list for non-client users
+    if (!isClientRole) {
+      fetch(`${supabaseUrl}/rest/v1/projects?select=*&order=name`, { headers })
+        .then((r) => r.json())
+        .then((data) => { if (Array.isArray(data)) setProjects(data); })
+        .catch(() => {});
+    } else {
+      // For clients, load their project info
+      if (clientProjectId) {
+        fetch(`${supabaseUrl}/rest/v1/projects?select=*&id=eq.${clientProjectId}`, { headers })
+          .then((r) => r.json())
+          .then((data) => { if (Array.isArray(data)) setProjects(data); })
+          .catch(() => {});
+      }
+    }
 
-    fetch(
-      `${supabaseUrl}/rest/v1/team_members?select=*&is_active=eq.true&order=name`,
-      { headers }
-    )
-      .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data)) setTeamMembers(data); })
-      .catch(() => {});
-  }, []);
+    // Only load team members for non-client users
+    if (!isClientRole) {
+      fetch(
+        `${supabaseUrl}/rest/v1/team_members?select=*&is_active=eq.true&order=name`,
+        { headers }
+      )
+        .then((r) => r.json())
+        .then((data) => { if (Array.isArray(data)) setTeamMembers(data); })
+        .catch(() => {});
+    }
+  }, [isClientRole, clientProjectId]);
 
   const fetchBugs = useCallback(async () => {
     const session = getSession();
@@ -85,7 +111,14 @@ export default function DashboardPage() {
     params.set("page_size", "30");
     params.set("sort_by", sortBy);
     params.set("sort_dir", sortDir);
-    if (filterProject) params.set("project_id", filterProject);
+
+    // For clients, always filter by their project
+    if (isClientRole && clientProjectId) {
+      params.set("project_id", clientProjectId);
+    } else if (filterProject) {
+      params.set("project_id", filterProject);
+    }
+
     if (filterStatus) params.set("status", filterStatus);
     if (filterSeverity) params.set("severity", filterSeverity);
     if (filterAssigned) params.set("assigned_to", filterAssigned);
@@ -119,6 +152,8 @@ export default function DashboardPage() {
     filterSeverity,
     filterAssigned,
     search,
+    isClientRole,
+    clientProjectId,
   ]);
 
   useEffect(() => {
@@ -134,8 +169,6 @@ export default function DashboardPage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchInput]);
-
-  const user = getUser();
 
   const toggleSort = (column: string) => {
     if (sortBy === column) {
@@ -154,6 +187,12 @@ export default function DashboardPage() {
     {} as Record<string, number>
   );
 
+  // Get project name for client header
+  const clientProjectName = isClientRole && projects.length > 0 ? projects[0]?.name : null;
+
+  // Number of columns changes for client view
+  const tableCols = isClientRole ? 5 : 7;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
@@ -167,7 +206,11 @@ export default function DashboardPage() {
             </div>
             <span className="font-bold text-gray-900">Hub 360</span>
             <span className="text-gray-300">|</span>
-            <span className="text-sm text-gray-500">Bug Tracker</span>
+            {isClientRole && clientProjectName ? (
+              <span className="text-sm font-medium text-gray-700">{clientProjectName}</span>
+            ) : (
+              <span className="text-sm text-gray-500">Bug Tracker</span>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -230,21 +273,24 @@ export default function DashboardPage() {
             />
           </div>
 
-          <select
-            value={filterProject}
-            onChange={(e) => {
-              setFilterProject(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-          >
-            <option value="">Todos os projetos</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          {/* Hide project filter for clients */}
+          {!isClientRole && (
+            <select
+              value={filterProject}
+              onChange={(e) => {
+                setFilterProject(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            >
+              <option value="">Todos os projetos</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           <select
             value={filterSeverity}
@@ -262,21 +308,24 @@ export default function DashboardPage() {
             ))}
           </select>
 
-          <select
-            value={filterAssigned}
-            onChange={(e) => {
-              setFilterAssigned(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-          >
-            <option value="">Todos os responsaveis</option>
-            {teamMembers.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+          {/* Hide assigned filter for clients */}
+          {!isClientRole && (
+            <select
+              value={filterAssigned}
+              onChange={(e) => {
+                setFilterAssigned(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            >
+              <option value="">Todos os responsaveis</option>
+              {teamMembers.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           {(filterProject ||
             filterStatus ||
@@ -335,8 +384,10 @@ export default function DashboardPage() {
                   >
                     Titulo
                   </Th>
-                  <Th>Projeto</Th>
-                  <Th>Responsavel</Th>
+                  {/* Hide Projeto column for clients */}
+                  {!isClientRole && <Th>Projeto</Th>}
+                  {/* Hide Responsavel column for clients */}
+                  {!isClientRole && <Th>Responsavel</Th>}
                   <Th
                     onClick={() => toggleSort("created_at")}
                     active={sortBy === "created_at"}
@@ -349,14 +400,14 @@ export default function DashboardPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="py-16 text-center">
+                    <td colSpan={tableCols} className="py-16 text-center">
                       <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto" />
                     </td>
                   </tr>
                 ) : bugs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={tableCols}
                       className="py-16 text-center text-gray-400 text-sm"
                     >
                       {search || filterProject || filterStatus || filterSeverity
@@ -385,18 +436,24 @@ export default function DashboardPage() {
                           {bug.title}
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
-                          {bug.project?.name || "-"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">
-                          {bug.assignee?.name || (
-                            <span className="text-gray-300">-</span>
-                          )}
-                        </span>
-                      </td>
+                      {/* Hide Projeto column for clients */}
+                      {!isClientRole && (
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
+                            {bug.project?.name || "-"}
+                          </span>
+                        </td>
+                      )}
+                      {/* Hide Responsavel column for clients */}
+                      {!isClientRole && (
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className="text-sm text-gray-600">
+                            {bug.assignee?.name || (
+                              <span className="text-gray-300">-</span>
+                            )}
+                          </span>
+                        </td>
+                      )}
                       <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">
                         {formatRelativeDate(bug.created_at)}
                       </td>
@@ -443,6 +500,7 @@ export default function DashboardPage() {
         teamMembers={teamMembers}
         onClose={() => setSelectedBugId(null)}
         onUpdate={fetchBugs}
+        isClient={isClientRole}
       />
     </div>
   );

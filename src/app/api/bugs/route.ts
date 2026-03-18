@@ -227,8 +227,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if user is a client and get their project_id
+    const { data: teamMember } = await supabase
+      .from("team_members")
+      .select("id, role, project_id")
+      .eq("auth_user_id", user.id)
+      .single();
+
+    const isClientUser = teamMember?.role === "client";
+    const clientProjectId = isClientUser ? teamMember?.project_id : null;
+
+    // If client has no project_id, deny access
+    if (isClientUser && !clientProjectId) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Utilizador cliente sem projeto associado" } },
+        { status: 403 }
+      );
+    }
+
     const url = new URL(request.url);
-    const projectId = url.searchParams.get("project_id");
+    let projectId = url.searchParams.get("project_id");
     const status = url.searchParams.get("status");
     const severity = url.searchParams.get("severity");
     const assignedTo = url.searchParams.get("assigned_to");
@@ -237,6 +255,11 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(url.searchParams.get("page_size") || "30");
     const sortBy = url.searchParams.get("sort_by") || "created_at";
     const sortDir = url.searchParams.get("sort_dir") || "desc";
+
+    // Force client users to only see their project
+    if (isClientUser) {
+      projectId = clientProjectId;
+    }
 
     let query = supabase
       .from("bugs")

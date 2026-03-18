@@ -29,6 +29,15 @@ export async function GET(
       );
     }
 
+    // Check if user is a client
+    const { data: teamMember } = await supabase
+      .from("team_members")
+      .select("id, role, project_id")
+      .eq("auth_user_id", user.id)
+      .single();
+
+    const isClientUser = teamMember?.role === "client";
+
     const { data: bug, error } = await supabase
       .from("bugs")
       .select(
@@ -44,6 +53,16 @@ export async function GET(
       );
     }
 
+    // If client, verify the bug belongs to their project
+    if (isClientUser) {
+      if (!teamMember?.project_id || bug.project_id !== teamMember.project_id) {
+        return NextResponse.json(
+          { error: { code: "FORBIDDEN", message: "Acesso negado" } },
+          { status: 403 }
+        );
+      }
+    }
+
     // Get attachments
     const { data: attachments } = await supabase
       .from("bug_attachments")
@@ -51,19 +70,27 @@ export async function GET(
       .eq("bug_id", id)
       .order("created_at");
 
-    // Get notes
-    const { data: notes } = await supabase
-      .from("bug_notes")
-      .select("*, author:team_members(id, name, email, avatar_url)")
-      .eq("bug_id", id)
-      .order("created_at", { ascending: true });
+    // Get notes (hide for clients)
+    let notes = null;
+    if (!isClientUser) {
+      const { data: notesData } = await supabase
+        .from("bug_notes")
+        .select("*, author:team_members(id, name, email, avatar_url)")
+        .eq("bug_id", id)
+        .order("created_at", { ascending: true });
+      notes = notesData;
+    }
 
-    // Get audit log
-    const { data: auditLog } = await supabase
-      .from("bug_audit_log")
-      .select("*, actor:team_members(id, name)")
-      .eq("bug_id", id)
-      .order("created_at", { ascending: true });
+    // Get audit log (hide for clients)
+    let auditLog = null;
+    if (!isClientUser) {
+      const { data: auditLogData } = await supabase
+        .from("bug_audit_log")
+        .select("*, actor:team_members(id, name)")
+        .eq("bug_id", id)
+        .order("created_at", { ascending: true });
+      auditLog = auditLogData;
+    }
 
     // Generate signed URLs for attachments
     const attachmentsWithUrls = await Promise.all(

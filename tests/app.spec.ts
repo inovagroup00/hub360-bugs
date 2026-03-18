@@ -1450,3 +1450,402 @@ test.describe("Reports Page", () => {
     await expect(memberSelect).toBeVisible();
   });
 });
+
+// ============================================
+// CLIENT ROLE - LOGIN TESTS
+// ============================================
+
+test.describe("Client Role - Login", () => {
+  test("client can login successfully and reaches dashboard", async ({ page }) => {
+    await page.goto("/login");
+    await page.fill('input[type="email"]', "cliente@az-ib.com");
+    await page.fill('input[type="password"]', "Hub360@2025");
+    await page.click('button[type="submit"]');
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+    await expect(page).toHaveURL(/dashboard/);
+  });
+
+  test("client dashboard shows project name in header instead of Bug Tracker", async ({ page }) => {
+    await page.goto("/login");
+    await page.fill('input[type="email"]', "cliente@az-ib.com");
+    await page.fill('input[type="password"]', "Hub360@2025");
+    await page.click('button[type="submit"]');
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+
+    // Wait for data to load so project name is fetched
+    await page.waitForFunction(
+      () => !document.querySelector("table tbody .animate-spin"),
+      { timeout: 15000 }
+    );
+
+    const header = page.locator("header");
+    // Client header should show project name "AZ-IB" instead of "Bug Tracker"
+    await expect(header.getByText("AZ-IB", { exact: true })).toBeVisible({ timeout: 10000 });
+  });
+
+  test("client dashboard does NOT show project filter dropdown", async ({ page }) => {
+    await page.goto("/login");
+    await page.fill('input[type="email"]', "cliente@az-ib.com");
+    await page.fill('input[type="password"]', "Hub360@2025");
+    await page.click('button[type="submit"]');
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+
+    await page.waitForFunction(
+      () => !document.querySelector("table tbody .animate-spin"),
+      { timeout: 15000 }
+    );
+
+    // Project filter dropdown with "Todos os projetos" should NOT be visible for clients
+    await expect(page.locator("select").filter({ hasText: "Todos os projetos" })).toBeHidden();
+  });
+});
+
+// ============================================
+// CLIENT ROLE - DASHBOARD TESTS
+// ============================================
+
+test.describe("Client Role - Dashboard", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/login");
+    await page.fill('input[type="email"]', "cliente@az-ib.com");
+    await page.fill('input[type="password"]', "Hub360@2025");
+    await page.click('button[type="submit"]');
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+    // Wait for table data to load
+    await page.waitForFunction(
+      () => !document.querySelector("table tbody .animate-spin"),
+      { timeout: 15000 }
+    );
+  });
+
+  test("client sees only bugs from their project (AZ-IB)", async ({ page }) => {
+    // Wait for table rows to appear
+    const rows = page.locator("table tbody tr");
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(0);
+
+    // Since Projeto column is hidden for clients, we verify via API
+    // that all returned bugs belong to the client's project.
+    // On the UI side, we simply confirm the table has data and no Projeto column.
+    await expect(page.locator("th", { hasText: "Projeto" })).toBeHidden();
+  });
+
+  test("client does NOT see Projeto column in table", async ({ page }) => {
+    // The table header should NOT have a "Projeto" column
+    await expect(page.locator("th", { hasText: "Projeto" })).toBeHidden();
+
+    // Verify other expected columns ARE visible
+    await expect(page.locator("th").filter({ hasText: "#" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Status" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Gravidade" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Titulo" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Data" })).toBeVisible();
+  });
+
+  test("client does NOT see Responsavel column in table", async ({ page }) => {
+    await expect(page.locator("th", { hasText: "Responsavel" })).toBeHidden();
+  });
+
+  test("client does NOT see assigned filter dropdown", async ({ page }) => {
+    // The "Todos os responsaveis" filter dropdown should not be visible
+    await expect(page.locator("select").filter({ hasText: "Todos os responsaveis" })).toBeHidden();
+  });
+
+  test("client can use search filter", async ({ page }) => {
+    // The search input should be visible
+    const searchInput = page.locator('input[placeholder="Buscar por titulo..."]');
+    await expect(searchInput).toBeVisible();
+
+    // Type a search query
+    await searchInput.fill("test");
+
+    // Wait for debounce and data reload
+    await page.waitForTimeout(1000);
+    await page.waitForFunction(
+      () => !document.querySelector("table tbody .animate-spin"),
+      { timeout: 10000 }
+    );
+
+    // Table should still render (either with results or empty state)
+    const table = page.locator("table");
+    await expect(table).toBeVisible();
+  });
+
+  test("client can use status filter via stat cards", async ({ page }) => {
+    // Click on a status card (e.g. "Novo")
+    const statusCard = page.locator("button").filter({ hasText: "Novo" }).first();
+    await expect(statusCard).toBeVisible();
+    await statusCard.click();
+
+    // Wait for data reload
+    await page.waitForTimeout(1500);
+    await page.waitForFunction(
+      () => !document.querySelector("table tbody .animate-spin"),
+      { timeout: 10000 }
+    );
+
+    // "Limpar filtros" button should appear since a filter is active
+    await expect(page.locator("text=Limpar filtros")).toBeVisible({ timeout: 5000 });
+  });
+
+  test("client clicks a bug - drawer opens but does NOT show notes section", async ({ page }) => {
+    // Click the first bug row
+    await page.locator("table tbody tr").first().click();
+
+    const drawer = page.locator(".fixed.right-0.top-0");
+    await expect(drawer).toBeVisible({ timeout: 10000 });
+
+    // Wait for bug details to load
+    await expect(drawer.locator("dt", { hasText: "Onde encontrou" })).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Notes section should NOT be visible for client users
+    await expect(drawer.locator("text=Notas internas")).toBeHidden();
+
+    // Note input should NOT be visible
+    await expect(drawer.locator('input[placeholder="Adicionar nota..."]')).toBeHidden();
+
+    // Historico (audit log) should also NOT be visible
+    await expect(drawer.locator("text=Historico")).toBeHidden();
+  });
+
+  test("client drawer shows status as read-only (no select dropdown for status)", async ({ page }) => {
+    // Click the first bug row
+    await page.locator("table tbody tr").first().click();
+
+    const drawer = page.locator(".fixed.right-0.top-0");
+    await expect(drawer).toBeVisible({ timeout: 10000 });
+    await expect(drawer.locator("dt", { hasText: "Onde encontrou" })).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Status label should be visible
+    await expect(drawer.locator("label", { hasText: "Status" })).toBeVisible();
+
+    // For client, status is displayed in a read-only div (bg-gray-50) not a select
+    const readOnlyStatusDiv = drawer.locator("div.bg-gray-50.border.border-gray-200.rounded-lg");
+    await expect(readOnlyStatusDiv).toBeVisible();
+
+    // There should be NO select elements in the drawer (no status select, no assignee select)
+    const selects = drawer.locator("select");
+    const selectCount = await selects.count();
+    expect(selectCount).toBe(0);
+
+    // Responsavel label should NOT be visible for clients
+    await expect(drawer.locator("label", { hasText: "Responsavel" })).toBeHidden();
+  });
+});
+
+// ============================================
+// CLIENT ROLE - REPORTS PAGE TESTS
+// ============================================
+
+test.describe("Client Role - Reports Page", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/login");
+    await page.fill('input[type="email"]', "cliente@az-ib.com");
+    await page.fill('input[type="password"]', "Hub360@2025");
+    await page.click('button[type="submit"]');
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+  });
+
+  test("client can access /dashboard/reports", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Metric cards should be visible
+    await expect(page.locator("text=Total de bugs")).toBeVisible();
+    await expect(page.locator("text=Bugs no periodo")).toBeVisible();
+    await expect(page.locator("text=Tempo medio resolucao")).toBeVisible();
+    await expect(page.locator("text=Bugs abertos")).toBeVisible();
+  });
+
+  test("client reports does NOT show project filter", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Project filter dropdown should NOT be visible for clients
+    await expect(page.locator("select").filter({ hasText: "Todos os projetos" })).toBeHidden();
+  });
+
+  test("client reports does NOT show team member filter", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Team member filter dropdown should NOT be visible for clients
+    await expect(page.locator("select").filter({ hasText: "Todos os membros" })).toBeHidden();
+  });
+
+  test("client reports shows metric cards and charts but NOT Bugs por Projeto chart", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Metric cards should have numeric values
+    const metricValues = page.locator(".text-3xl.font-bold");
+    const count = await metricValues.count();
+    expect(count).toBe(4);
+
+    // Status and severity charts should be visible
+    await expect(page.locator("text=Bugs por Status")).toBeVisible();
+    await expect(page.locator("text=Bugs por Gravidade")).toBeVisible();
+    await expect(page.locator("text=Tendencia Semanal")).toBeVisible();
+
+    // "Bugs por Projeto" chart should NOT be visible for clients (redundant for single project)
+    await expect(page.locator("text=Bugs por Projeto")).toBeHidden();
+  });
+});
+
+// ============================================
+// CLIENT ROLE - API SECURITY TESTS
+// ============================================
+
+test.describe("Client Role - API Security", () => {
+  test("Client API: GET /api/bugs returns only their project's bugs", async ({ request }) => {
+    // Authenticate as client
+    const authRes = await request.post("/api/auth", {
+      data: { email: "cliente@az-ib.com", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const authBody = await authRes.json();
+    expect(authBody.success).toBe(true);
+    const token = authBody.session.access_token;
+    const clientProjectId = authBody.user.team_member.project_id;
+
+    // Fetch bugs as client
+    const res = await request.get("/api/bugs?page=1&page_size=30", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(Array.isArray(body.bugs)).toBe(true);
+
+    // ALL returned bugs must belong to the client's project
+    for (const bug of body.bugs) {
+      expect(bug.project_id).toBe(clientProjectId);
+    }
+  });
+
+  test("Client API: GET /api/bugs/:id for another project's bug returns 403", async ({ request }) => {
+    // Authenticate as client (AZ-IB)
+    const clientAuthRes = await request.post("/api/auth", {
+      data: { email: "cliente@az-ib.com", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const clientAuth = await clientAuthRes.json();
+    const clientToken = clientAuth.session.access_token;
+    const clientProjectId = clientAuth.user.team_member.project_id;
+
+    // Authenticate as admin to find a bug from a different project
+    const adminAuthRes = await request.post("/api/auth", {
+      data: { email: "admin@hub360.com.br", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const adminAuth = await adminAuthRes.json();
+    const adminToken = adminAuth.session.access_token;
+
+    // Get all bugs as admin
+    const adminBugsRes = await request.get("/api/bugs?page=1&page_size=100", {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    const adminBugs = await adminBugsRes.json();
+
+    // Find a bug that does NOT belong to the client's project
+    const otherBug = adminBugs.bugs.find(
+      (b: { project_id: string }) => b.project_id !== clientProjectId
+    );
+
+    if (otherBug) {
+      // Try to access that bug as the client - should return 403
+      const res = await request.get(`/api/bugs/${otherBug.id}`, {
+        headers: { Authorization: `Bearer ${clientToken}` },
+      });
+      expect(res.status()).toBe(403);
+      const body = await res.json();
+      expect(body.error.code).toBe("FORBIDDEN");
+    } else {
+      // If all bugs belong to the same project, skip with a note
+      // This test needs bugs from multiple projects to be meaningful
+      test.skip();
+    }
+  });
+
+  test("Client API: GET /api/reports forces their project filter", async ({ request }) => {
+    // Authenticate as client
+    const authRes = await request.post("/api/auth", {
+      data: { email: "cliente@az-ib.com", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const authBody = await authRes.json();
+    const token = authBody.session.access_token;
+
+    // Even without passing project_id, the API should force the client's project
+    const res = await request.get("/api/reports", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+
+    // Verify response has valid report data
+    expect(typeof body.total_bugs).toBe("number");
+    expect(typeof body.period_bugs).toBe("number");
+    expect(typeof body.open_bugs).toBe("number");
+
+    // The total_bugs should only reflect the client's project
+    // Authenticate as admin and compare with project-filtered count
+    const adminAuthRes = await request.post("/api/auth", {
+      data: { email: "admin@hub360.com.br", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const adminAuth = await adminAuthRes.json();
+    const adminToken = adminAuth.session.access_token;
+
+    const adminRes = await request.get(
+      `/api/reports?project_id=${authBody.user.team_member.project_id}`,
+      { headers: { Authorization: `Bearer ${adminToken}` } }
+    );
+    const adminBody = await adminRes.json();
+
+    // Client report total should match admin's project-filtered total
+    expect(body.total_bugs).toBe(adminBody.total_bugs);
+  });
+
+  test("Client API: GET /api/bugs/:id hides notes and audit_log for client", async ({ request }) => {
+    // Authenticate as client
+    const authRes = await request.post("/api/auth", {
+      data: { email: "cliente@az-ib.com", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const authBody = await authRes.json();
+    const clientToken = authBody.session.access_token;
+
+    // Get client's bugs to pick one
+    const bugsRes = await request.get("/api/bugs?page=1&page_size=1", {
+      headers: { Authorization: `Bearer ${clientToken}` },
+    });
+    const bugsBody = await bugsRes.json();
+    expect(bugsBody.bugs.length).toBeGreaterThan(0);
+    const bugId = bugsBody.bugs[0].id;
+
+    // Get single bug detail as client
+    const detailRes = await request.get(`/api/bugs/${bugId}`, {
+      headers: { Authorization: `Bearer ${clientToken}` },
+    });
+    expect(detailRes.status()).toBe(200);
+    const detail = await detailRes.json();
+
+    // Notes should be an empty array (not fetched for clients)
+    expect(Array.isArray(detail.notes)).toBe(true);
+    expect(detail.notes.length).toBe(0);
+
+    // Audit log should be an empty array (not fetched for clients)
+    expect(Array.isArray(detail.audit_log)).toBe(true);
+    expect(detail.audit_log.length).toBe(0);
+
+    // But the bug data itself should still be present
+    expect(detail.id).toBe(bugId);
+    expect(detail.title).toBeDefined();
+    expect(detail.status).toBeDefined();
+    expect(Array.isArray(detail.attachments)).toBe(true);
+  });
+});
