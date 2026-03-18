@@ -251,6 +251,8 @@ export async function GET(request: NextRequest) {
     const severity = url.searchParams.get("severity");
     const assignedTo = url.searchParams.get("assigned_to");
     const search = url.searchParams.get("search");
+    const dateFrom = url.searchParams.get("date_from");
+    const dateTo = url.searchParams.get("date_to");
     const page = parseInt(url.searchParams.get("page") || "1");
     const pageSize = parseInt(url.searchParams.get("page_size") || "30");
     const sortBy = url.searchParams.get("sort_by") || "created_at";
@@ -279,6 +281,8 @@ export async function GET(request: NextRequest) {
     }
     if (assignedTo) query = query.eq("assigned_to", assignedTo);
     if (search) query = query.ilike("title", `%${search}%`);
+    if (dateFrom) query = query.gte("created_at", `${dateFrom}T00:00:00.000Z`);
+    if (dateTo) query = query.lte("created_at", `${dateTo}T23:59:59.999Z`);
 
     const ascending = sortDir === "asc";
     query = query.order(sortBy, { ascending });

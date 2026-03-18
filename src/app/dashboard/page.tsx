@@ -33,6 +33,8 @@ export default function DashboardPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("");
   const [filterAssigned, setFilterAssigned] = useState("");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortDir, setSortDir] = useState("desc");
@@ -122,6 +124,8 @@ export default function DashboardPage() {
     if (filterStatus) params.set("status", filterStatus);
     if (filterSeverity) params.set("severity", filterSeverity);
     if (filterAssigned) params.set("assigned_to", filterAssigned);
+    if (filterDateFrom) params.set("date_from", filterDateFrom);
+    if (filterDateTo) params.set("date_to", filterDateTo);
     if (search) params.set("search", search);
 
     try {
@@ -151,6 +155,8 @@ export default function DashboardPage() {
     filterStatus,
     filterSeverity,
     filterAssigned,
+    filterDateFrom,
+    filterDateTo,
     search,
     isClientRole,
     clientProjectId,
@@ -308,6 +314,29 @@ export default function DashboardPage() {
             ))}
           </select>
 
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">De:</span>
+            <input
+              type="date"
+              value={filterDateFrom}
+              onChange={(e) => {
+                setFilterDateFrom(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            />
+            <span className="text-xs text-gray-400">Ate:</span>
+            <input
+              type="date"
+              value={filterDateTo}
+              onChange={(e) => {
+                setFilterDateTo(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            />
+          </div>
+
           {/* Hide assigned filter for clients */}
           {!isClientRole && (
             <select
@@ -331,6 +360,8 @@ export default function DashboardPage() {
             filterStatus ||
             filterSeverity ||
             filterAssigned ||
+            filterDateFrom ||
+            filterDateTo ||
             search) && (
             <button
               onClick={() => {
@@ -338,6 +369,8 @@ export default function DashboardPage() {
                 setFilterStatus("");
                 setFilterSeverity("");
                 setFilterAssigned("");
+                setFilterDateFrom("");
+                setFilterDateTo("");
                 setSearchInput("");
                 setSearch("");
                 setPage(1);
