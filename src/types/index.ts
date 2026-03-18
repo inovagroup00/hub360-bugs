@@ -89,6 +89,35 @@ export interface AuditLogEntry {
   actor?: TeamMember;
 }
 
+// Report types
+export interface ReportData {
+  total_bugs: number;
+  period_bugs: number;
+  avg_resolution_hours: number;
+  open_bugs: number;
+  by_status: Record<string, number>;
+  by_severity: Record<string, number>;
+  by_project: { name: string; count: number }[];
+  weekly_trend: { week: string; created: number; resolved: number }[];
+  resolved_bugs: ResolvedBug[];
+  projects: { id: string; name: string }[];
+  team_members: { id: string; name: string }[];
+  date_from: string;
+  date_to: string;
+}
+
+export interface ResolvedBug {
+  id: string;
+  number: number;
+  title: string;
+  severity: string;
+  project_name: string;
+  assigned_to_name: string;
+  created_at: string;
+  resolved_at: string;
+  resolution_hours: number;
+}
+
 export const SEVERITY_CONFIG: Record<
   Severity,
   { label: string; color: string; bgColor: string; description: string }

@@ -867,7 +867,7 @@ test.describe("Dashboard Advanced Features", () => {
     await page.waitForTimeout(3000);
 
     // The note text should now appear in the notes list
-    await expect(drawer.locator("text=Nota de teste via Playwright")).toBeVisible({
+    await expect(drawer.locator("text=Nota de teste via Playwright").first()).toBeVisible({
       timeout: 10000,
     });
   });
@@ -1133,5 +1133,320 @@ test.describe("Login Page Additional", () => {
   test("shows Bug Tracker subtitle", async ({ page }) => {
     await page.goto("/login");
     await expect(page.locator("text=Bug Tracker")).toBeVisible();
+  });
+});
+
+// ============================================
+// API - REPORTS ENDPOINT
+// ============================================
+
+test.describe("API Reports Endpoint", () => {
+  test("GET /api/reports requires authentication", async ({ request }) => {
+    const res = await request.get("/api/reports");
+    expect(res.status()).toBe(401);
+    const body = await res.json();
+    expect(body.error.code).toBe("UNAUTHORIZED");
+  });
+
+  test("GET /api/reports rejects invalid token", async ({ request }) => {
+    const res = await request.get("/api/reports", {
+      headers: { Authorization: "Bearer invalid_token_here" },
+    });
+    expect(res.status()).toBe(401);
+    const body = await res.json();
+    expect(body.error.code).toBe("UNAUTHORIZED");
+  });
+
+  test("GET /api/reports returns valid data structure with default params", async ({ request }) => {
+    // Login first
+    const authRes = await request.post("/api/auth", {
+      data: { email: "admin@hub360.com.br", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const { session } = await authRes.json();
+
+    const res = await request.get("/api/reports", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+
+    // Validate full response structure
+    expect(typeof body.total_bugs).toBe("number");
+    expect(typeof body.period_bugs).toBe("number");
+    expect(typeof body.avg_resolution_hours).toBe("number");
+    expect(typeof body.open_bugs).toBe("number");
+    expect(typeof body.by_status).toBe("object");
+    expect(typeof body.by_severity).toBe("object");
+    expect(Array.isArray(body.by_project)).toBe(true);
+    expect(Array.isArray(body.weekly_trend)).toBe(true);
+    expect(Array.isArray(body.resolved_bugs)).toBe(true);
+    expect(Array.isArray(body.projects)).toBe(true);
+    expect(Array.isArray(body.team_members)).toBe(true);
+    expect(typeof body.date_from).toBe("string");
+    expect(typeof body.date_to).toBe("string");
+
+    // Validate date format (YYYY-MM-DD)
+    expect(body.date_from).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(body.date_to).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  test("GET /api/reports supports date_from and date_to params", async ({ request }) => {
+    const authRes = await request.post("/api/auth", {
+      data: { email: "admin@hub360.com.br", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const { session } = await authRes.json();
+
+    const res = await request.get("/api/reports?date_from=2025-01-01&date_to=2025-12-31", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.date_from).toBe("2025-01-01");
+    expect(body.date_to).toBe("2025-12-31");
+  });
+
+  test("GET /api/reports supports project_id filter", async ({ request }) => {
+    const authRes = await request.post("/api/auth", {
+      data: { email: "admin@hub360.com.br", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const { session } = await authRes.json();
+
+    // First get the list of projects from a default report call
+    const defaultRes = await request.get("/api/reports", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    const defaultBody = await defaultRes.json();
+    expect(defaultBody.projects.length).toBeGreaterThan(0);
+
+    const projectId = defaultBody.projects[0].id;
+
+    // Now filter by that project
+    const res = await request.get(`/api/reports?project_id=${projectId}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(typeof body.total_bugs).toBe("number");
+    expect(typeof body.period_bugs).toBe("number");
+  });
+
+  test("GET /api/reports rejects invalid date format", async ({ request }) => {
+    const authRes = await request.post("/api/auth", {
+      data: { email: "admin@hub360.com.br", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const { session } = await authRes.json();
+
+    const res = await request.get("/api/reports?date_from=01-01-2025&date_to=12-31-2025", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    expect(res.status()).toBe(400);
+    const body = await res.json();
+    expect(body.error.code).toBe("VALIDATION_ERROR");
+    expect(body.error.message).toContain("YYYY-MM-DD");
+  });
+
+  test("GET /api/reports rejects date_from after date_to", async ({ request }) => {
+    const authRes = await request.post("/api/auth", {
+      data: { email: "admin@hub360.com.br", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const { session } = await authRes.json();
+
+    const res = await request.get("/api/reports?date_from=2025-12-31&date_to=2025-01-01", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    expect(res.status()).toBe(400);
+    const body = await res.json();
+    expect(body.error.code).toBe("VALIDATION_ERROR");
+    expect(body.error.message).toContain("anterior");
+  });
+
+  test("GET /api/reports rejects invalid project_id format", async ({ request }) => {
+    const authRes = await request.post("/api/auth", {
+      data: { email: "admin@hub360.com.br", password: "Hub360@2025" },
+      headers: { "Content-Type": "application/json" },
+    });
+    const { session } = await authRes.json();
+
+    const res = await request.get("/api/reports?project_id=not-a-uuid", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    expect(res.status()).toBe(400);
+    const body = await res.json();
+    expect(body.error.code).toBe("VALIDATION_ERROR");
+  });
+});
+
+// ============================================
+// REPORTS PAGE UI
+// ============================================
+
+test.describe("Reports Page", () => {
+  test.beforeEach(async ({ page }) => {
+    // Login first
+    await page.goto("/login");
+    await page.fill('input[type="email"]', "admin@hub360.com.br");
+    await page.fill('input[type="password"]', "Hub360@2025");
+    await page.click('button[type="submit"]');
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+  });
+
+  test("requires login - redirects to /login if not authenticated", async ({ page, context }) => {
+    // Clear all cookies and storage to simulate unauthenticated state
+    await context.clearCookies();
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+
+    await page.goto("/dashboard/reports");
+
+    // Should redirect to /login since there is no session
+    await page.waitForURL("**/login", { timeout: 10000 });
+  });
+
+  test("shows loading skeleton then metric cards with numbers", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+
+    // Wait for the report data to load and metric cards to appear
+    // Metric cards contain labels like "Total de bugs", "Bugs no periodo", etc.
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+    await expect(page.locator("text=Total de bugs")).toBeVisible();
+    await expect(page.locator("text=Bugs no periodo")).toBeVisible();
+    await expect(page.locator("text=Tempo medio resolucao")).toBeVisible();
+    await expect(page.locator("text=Bugs abertos")).toBeVisible();
+
+    // Each metric card should display a number value (the text-3xl font-bold element)
+    const metricValues = page.locator(".text-3xl.font-bold");
+    const count = await metricValues.count();
+    expect(count).toBe(4);
+  });
+
+  test("shows filter bar with date presets", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Date preset buttons
+    await expect(page.locator("button", { hasText: "7 dias" })).toBeVisible();
+    await expect(page.locator("button", { hasText: "30 dias" })).toBeVisible();
+    await expect(page.locator("button", { hasText: "90 dias" })).toBeVisible();
+    await expect(page.locator("button", { hasText: "1 ano" })).toBeVisible();
+  });
+
+  test("shows project filter dropdown", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Project dropdown with "Todos os projetos" default option
+    const projectSelect = page.locator("select").filter({ hasText: "Todos os projetos" });
+    await expect(projectSelect).toBeVisible();
+
+    // Should have at least one project option besides the default
+    const options = projectSelect.locator("option");
+    const optionCount = await options.count();
+    expect(optionCount).toBeGreaterThanOrEqual(2); // "Todos os projetos" + at least 1 project
+  });
+
+  test("date preset buttons change active state", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Default preset is "90d" - the "90 dias" button should have dark bg
+    const btn90 = page.locator("button", { hasText: "90 dias" });
+    await expect(btn90).toHaveClass(/bg-gray-900/);
+
+    // Click "7 dias" button
+    const btn7 = page.locator("button", { hasText: "7 dias" });
+    await btn7.click();
+
+    // Wait for the data to reload
+    await page.waitForTimeout(2000);
+
+    // "7 dias" should now be active (dark bg), "90 dias" should not be
+    await expect(btn7).toHaveClass(/bg-gray-900/);
+    await expect(btn90).not.toHaveClass(/bg-gray-900/);
+  });
+
+  test("shows charts section with SVG elements", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Chart card titles
+    await expect(page.locator("text=Bugs por Status")).toBeVisible();
+    await expect(page.locator("text=Bugs por Gravidade")).toBeVisible();
+    await expect(page.locator("text=Tendencia Semanal")).toBeVisible();
+    await expect(page.locator("text=Bugs por Projeto")).toBeVisible();
+
+    // At least some SVG elements should be present (charts render SVGs)
+    const svgs = page.locator("svg");
+    const svgCount = await svgs.count();
+    expect(svgCount).toBeGreaterThan(0);
+  });
+
+  test("shows resolved bugs table", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Table header
+    await expect(page.locator("text=Bugs Resolvidos no Periodo")).toBeVisible();
+
+    // Table column headers
+    await expect(page.locator("th", { hasText: "Titulo" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Projeto" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Gravidade" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Resolvido por" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Criado em" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Resolvido em" })).toBeVisible();
+    await expect(page.locator("th", { hasText: "Tempo" })).toBeVisible();
+
+    // Should show count text like "X bugs resolvidos" or "Nenhum bug resolvido neste periodo"
+    const resolvedSection = page.locator("text=/\\d+ bugs? resolvidos?|Nenhum bug resolvido/");
+    await expect(resolvedSection.first()).toBeVisible();
+  });
+
+  test("has print button", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    const printButton = page.locator("button", { hasText: "Imprimir" });
+    await expect(printButton).toBeVisible();
+  });
+
+  test("has navigation link back to Dashboard", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    const dashboardLink = page.locator("a[href='/dashboard']", { hasText: "Dashboard" });
+    await expect(dashboardLink).toBeVisible();
+
+    // Click it and verify navigation
+    await dashboardLink.click();
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
+  });
+
+  test("Dashboard has link to Relatorios", async ({ page }) => {
+    // We are already on the dashboard from beforeEach
+    await page.waitForSelector("table tbody tr", { timeout: 10000 });
+
+    const reportsLink = page.locator("a[href='/dashboard/reports']", { hasText: "Relatorios" });
+    await expect(reportsLink).toBeVisible();
+
+    // Click and verify navigation
+    await reportsLink.click();
+    await page.waitForURL("**/dashboard/reports", { timeout: 10000 });
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+  });
+
+  test("shows team member filter dropdown", async ({ page }) => {
+    await page.goto("/dashboard/reports");
+    await page.waitForSelector("text=Total de bugs", { timeout: 15000 });
+
+    // Team member dropdown with "Todos os membros" default option
+    const memberSelect = page.locator("select").filter({ hasText: "Todos os membros" });
+    await expect(memberSelect).toBeVisible();
   });
 });

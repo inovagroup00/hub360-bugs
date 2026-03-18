@@ -174,6 +174,12 @@ export default function DashboardPage() {
             <span className="text-sm text-gray-500">
               {user?.team_member?.name || user?.email}
             </span>
+            <a
+              href="/dashboard/reports"
+              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Relatorios
+            </a>
             <button
               onClick={logout}
               className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
