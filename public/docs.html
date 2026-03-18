@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hub 360 - Documentacao</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --code-bg: #f3f4f6;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+      --purple: #7c3aed;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* NAV */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-title { font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
+    .topbar-title span { color: var(--accent); }
+    .topbar-links { display: flex; gap: 20px; }
+    .topbar-links a {
+      font-size: 13px; color: var(--text-muted); text-decoration: none;
+      font-weight: 500; transition: color .15s;
+    }
+    .topbar-links a:hover { color: var(--accent); }
+
+    /* SIDEBAR */
+    .layout { display: flex; margin-top: 56px; }
+    .sidebar {
+      position: fixed; top: 56px; left: 0; bottom: 0;
+      width: 260px; overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 24px 16px; background: var(--surface);
+    }
+    .sidebar-group { margin-bottom: 20px; }
+    .sidebar-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px;
+      padding-left: 10px;
+    }
+    .sidebar a {
+      display: block; padding: 5px 10px; border-radius: 6px;
+      font-size: 13px; color: var(--text); text-decoration: none;
+      transition: background .12s;
+    }
+    .sidebar a:hover { background: var(--accent-light); color: var(--accent); }
+    .sidebar a.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+    /* MAIN */
+    .main { margin-left: 260px; padding: 40px 48px 80px; max-width: 900px; width: 100%; }
+
+    /* HERO */
+    .hero { margin-bottom: 48px; }
+    .hero h1 {
+      font-size: 36px; font-weight: 800; letter-spacing: -0.03em;
+      line-height: 1.15; margin-bottom: 12px;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 17px; color: var(--text-muted); max-width: 560px; }
+
+    .badge-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px; font-size: 11px;
+      font-weight: 600; border: 1px solid var(--border); background: var(--surface);
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* SECTIONS */
+    section { margin-bottom: 48px; }
+    section > h2 {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 16px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+    section > h3 {
+      font-size: 17px; font-weight: 700; margin: 24px 0 10px;
+      color: var(--text);
+    }
+    section p { margin-bottom: 12px; color: #374151; }
+
+    /* TABLES */
+    .table-wrap { overflow-x: auto; margin: 12px 0 20px; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: var(--code-bg); }
+    th { text-align: left; padding: 10px 14px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); vertical-align: top; }
+    tr:hover td { background: #f9fafb; }
+
+    /* CODE */
+    code {
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 12.5px; background: var(--code-bg);
+      padding: 2px 6px; border-radius: 4px;
+    }
+    pre {
+      background: #1e293b; color: #e2e8f0;
+      padding: 16px 20px; border-radius: 8px;
+      overflow-x: auto; margin: 12px 0 20px;
+      font-size: 12.5px; line-height: 1.6;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+    .key { color: #7dd3fc; }
+    .str { color: #86efac; }
+    .num { color: #fde68a; }
+    .comment { color: #64748b; }
+
+    /* METHOD BADGES */
+    .method {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+      font-family: monospace;
+    }
+    .method-get { background: #dcfce7; color: #166534; }
+    .method-post { background: #fef3c7; color: #92400e; }
+    .method-patch { background: #e0e7ff; color: #3730a3; }
+    .method-delete { background: #fee2e2; color: #991b1b; }
+
+    /* STATUS PILLS */
+    .status-pill {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; border: 1px solid;
+    }
+    .s-new { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .s-analyzing { background: #fefce8; color: #a16207; border-color: #fde68a; }
+    .s-fixing { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .s-awaiting { background: #faf5ff; color: #7c3aed; border-color: #ddd6fe; }
+    .s-resolved { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+    .s-closed { background: #f9fafb; color: #6b7280; border-color: #d1d5db; }
+    .s-reopened { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+    .sev-critical { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+    .sev-high { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .sev-medium { background: #fefce8; color: #a16207; border-color: #fde68a; }
+    .sev-low { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+
+    /* CARDS */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 16px 0; }
+    .card {
+      padding: 16px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface); transition: box-shadow .15s;
+    }
+    .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .card p { font-size: 12.5px; color: var(--text-muted); margin: 0; }
+
+    /* ENDPOINT */
+    .endpoint {
+      padding: 16px; border: 1px solid var(--border); border-radius: 8px;
+      margin: 16px 0; background: var(--surface);
+    }
+    .endpoint-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .endpoint-path { font-family: monospace; font-size: 14px; font-weight: 600; }
+    .endpoint-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+
+    /* FLOW */
+    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .flow-step {
+      padding: 8px 14px; border-radius: 6px; font-size: 12px;
+      background: var(--accent-light); color: var(--accent); font-weight: 600;
+      border: 1px solid #bfdbfe;
+    }
+    .flow-arrow { color: var(--text-muted); font-size: 16px; }
+
+    /* CALLOUT */
+    .callout {
+      padding: 14px 16px; border-radius: 8px; margin: 16px 0;
+      font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .callout-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .callout-warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* FOOTER */
+    .footer {
+      margin-left: 260px; padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-muted);
+      display: flex; justify-content: space-between;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main, .footer { margin-left: 0; padding-left: 20px; padding-right: 20px; }
+      .hero h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-title">Hub <span>360</span> Docs</div>
+  <div class="topbar-links">
+    <a href="#visao-geral">Visao Geral</a>
+    <a href="#api">API</a>
+    <a href="#banco">Banco</a>
+    <a href="#testes">Testes</a>
+    <a href="https://github.com/inovagroup00/hub360-bugs" target="_blank">GitHub</a>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-group">
+    <div class="sidebar-label">Inicio</div>
+    <a href="#visao-geral">Visao Geral</a>
+    <a href="#stack">Stack Tecnologica</a>
+    <a href="#estrutura">Estrutura de Arquivos</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Paginas</div>
+    <a href="#login">Login</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#report">Formulario de Report</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">API Reference</div>
+    <a href="#api-auth">POST /api/auth</a>
+    <a href="#api-bugs-list">GET /api/bugs</a>
+    <a href="#api-bugs-create">POST /api/bugs</a>
+    <a href="#api-bugs-get">GET /api/bugs/:id</a>
+    <a href="#api-bugs-update">PATCH /api/bugs/:id</a>
+    <a href="#api-notes">POST /api/bugs/:id/notes</a>
+    <a href="#api-upload">POST /api/upload</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Banco de Dados</div>
+    <a href="#banco">Schema</a>
+    <a href="#tabelas">Tabelas</a>
+    <a href="#triggers">Triggers & RLS</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Seguranca</div>
+    <a href="#auth-flow">Fluxo de Auth</a>
+    <a href="#rate-limit">Rate Limiting</a>
+    <a href="#security-headers">Headers</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Qualidade</div>
+    <a href="#testes">Testes</a>
+    <a href="#seed">Dados de Seed</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero" id="visao-geral">
+    <h1>Hub <span>360</span> Bug Tracker</h1>
+    <p>Plataforma completa de gestao e documentacao de bugs. Formulario publico de report, dashboard autenticado com filtros, notas internas e audit log.</p>
+    <div class="badge-row">
+      <span class="badge"><span class="badge-dot" style="background:#000"></span> Next.js 16</span>
+      <span class="badge"><span class="badge-dot" style="background:#3ecf8e"></span> Supabase</span>
+      <span class="badge"><span class="badge-dot" style="background:#38bdf8"></span> Tailwind CSS 4</span>
+      <span class="badge"><span class="badge-dot" style="background:#2563eb"></span> TypeScript</span>
+      <span class="badge"><span class="badge-dot" style="background:#e44d26"></span> Playwright</span>
+    </div>
+  </div>
+
+  <!-- STACK -->
+  <section id="stack">
+    <h2>Stack Tecnologica</h2>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Next.js 16 (App Router)</h4>
+        <p>Framework React com server components, API routes e renderizacao hibrida.</p>
+      </div>
+      <div class="card">
+        <h4>Supabase</h4>
+        <p>Backend-as-a-Service com PostgreSQL, Auth, Storage e Row Level Security.</p>
+      </div>
+      <div class="card">
+        <h4>Tailwind CSS 4</h4>
+        <p>Framework CSS utility-first para estilizacao rapida e responsiva.</p>
+      </div>
+      <div class="card">
+        <h4>TypeScript</h4>
+        <p>Tipagem estatica em todo o projeto para seguranca e produtividade.</p>
+      </div>
+      <div class="card">
+        <h4>Playwright</h4>
+        <p>Framework de testes E2E com 64 testes cobrindo UI, API e seguranca.</p>
+      </div>
+      <div class="card">
+        <h4>Vercel</h4>
+        <p>Deploy automatico com CI/CD integrado ao GitHub.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTRUTURA -->
+  <section id="estrutura">
+    <h2>Estrutura de Arquivos</h2>
+    <pre><code>hub360-bugs/
+<span class="comment">-- Paginas</span>
+  src/app/page.tsx              <span class="comment"># Redirect -> /login</span>
+  src/app/login/page.tsx        <span class="comment"># Tela de login</span>
+  src/app/dashboard/page.tsx    <span class="comment"># Dashboard principal</span>
+  src/app/report/[slug]/page.tsx <span class="comment"># Form publico de report</span>
+
+<span class="comment">-- API Routes</span>
+  src/app/api/auth/route.ts          <span class="comment"># Autenticacao</span>
+  src/app/api/bugs/route.ts          <span class="comment"># Listar / criar bugs</span>
+  src/app/api/bugs/[id]/route.ts     <span class="comment"># Detalhe / atualizar bug</span>
+  src/app/api/bugs/[id]/notes/route.ts <span class="comment"># Notas internas</span>
+  src/app/api/upload/route.ts        <span class="comment"># Upload de arquivos</span>
+
+<span class="comment">-- Componentes</span>
+  src/components/BugDrawer.tsx    <span class="comment"># Drawer de detalhes</span>
+  src/components/StatusBadge.tsx  <span class="comment"># Badge de status</span>
+  src/components/SeverityBadge.tsx <span class="comment"># Badge de severidade</span>
+
+<span class="comment">-- Libs</span>
+  src/lib/auth.ts              <span class="comment"># Helpers de auth (client)</span>
+  src/lib/supabase-browser.ts  <span class="comment"># Client Supabase (browser)</span>
+  src/lib/supabase-server.ts   <span class="comment"># Client Supabase (server)</span>
+  src/lib/utils.ts             <span class="comment"># Utilitarios</span>
+  src/types/index.ts           <span class="comment"># Tipos TypeScript</span>
+
+<span class="comment">-- Database</span>
+  setup-db.sql                 <span class="comment"># Schema SQL completo</span>
+  seed.mjs                     <span class="comment"># Dados de seed</span>
+  supabase/config.toml         <span class="comment"># Config Supabase CLI</span>
+
+<span class="comment">-- Testes</span>
+  tests/app.spec.ts            <span class="comment"># 64 testes Playwright</span>
+  playwright.config.ts         <span class="comment"># Config Playwright</span></code></pre>
+  </section>
+
+  <!-- LOGIN -->
+  <section id="login">
+    <h2>Login</h2>
+    <p>Tela de autenticacao para membros da equipe. Valida credenciais via Supabase Auth e armazena sessao no <code>localStorage</code>.</p>
+    <h3>Credenciais de Teste</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nome</th><th>Email</th><th>Senha</th><th>Papel</th></tr></thead>
+        <tbody>
+          <tr><td>Ricardo Mendes</td><td><code>admin@hub360.com.br</code></td><td><code>Hub360@2025</code></td><td>Admin</td></tr>
+          <tr><td>Ana Souza</td><td><code>dev@hub360.com.br</code></td><td><code>Hub360@2025</code></td><td>Dev</td></tr>
+          <tr><td>Carlos Lima</td><td><code>pm@hub360.com.br</code></td><td><code>Hub360@2025</code></td><td>PM</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Fluxo</h3>
+    <div class="flow">
+      <div class="flow-step">Email + Senha</div>
+      <span class="flow-arrow">-></span>
+      <div class="flow-step">POST /api/auth</div>
+      <span class="flow-arrow">-></span>
+      <div class="flow-step">Supabase Auth</div>
+      <span class="flow-arrow">-></span>
+      <div class="flow-step">localStorage</div>
+      <span class="flow-arrow">-></span>
+      <div class="flow-step">/dashboard</div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard">
+    <h2>Dashboard</h2>
+    <p>Painel principal autenticado para visualizacao e gestao de bugs. Requer login.</p>
+    <h3>Funcionalidades</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Filtros Multiplos</h4>
+        <p>Projeto, status, severidade, responsavel e busca por titulo com debounce de 300ms.</p>
+      </div>
+      <div class="card">
+        <h4>Ordenacao</h4>
+        <p>Colunas clicaveis: titulo, status, severidade, data de criacao. Toggle asc/desc.</p>
+      </div>
+      <div class="card">
+        <h4>Cards de Status</h4>
+        <p>Contadores clicaveis por status. Mostram total de bugs em cada estado.</p>
+      </div>
+      <div class="card">
+        <h4>Bug Drawer</h4>
+        <p>Painel lateral com detalhes, anexos, notas internas e audit log completo.</p>
+      </div>
+      <div class="card">
+        <h4>Paginacao</h4>
+        <p>30 bugs por pagina com navegacao entre paginas.</p>
+      </div>
+      <div class="card">
+        <h4>Gestao de Bugs</h4>
+        <p>Alterar status, atribuir responsavel e adicionar notas internas diretamente do drawer.</p>
+      </div>
+    </div>
+
+    <h3>Status Disponiveis</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
+      <span class="status-pill s-new">Novo</span>
+      <span class="status-pill s-analyzing">Em analise</span>
+      <span class="status-pill s-fixing">Em correcao</span>
+      <span class="status-pill s-awaiting">Aguardando validacao</span>
+      <span class="status-pill s-resolved">Resolvido</span>
+      <span class="status-pill s-closed">Fechado</span>
+      <span class="status-pill s-reopened">Reaberto</span>
+    </div>
+
+    <h3>Severidades</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
+      <span class="status-pill sev-critical">Critica - App trava ou perde dados</span>
+      <span class="status-pill sev-high">Alta - Funcionalidade importante quebrada</span>
+      <span class="status-pill sev-medium">Media - Problema contornavel</span>
+      <span class="status-pill sev-low">Baixa - Detalhe visual ou melhoria</span>
+    </div>
+  </section>
+
+  <!-- REPORT -->
+  <section id="report">
+    <h2>Formulario de Report</h2>
+    <p>Formulario publico acessivel via <code>/report/[slug]</code>. Qualquer usuario pode reportar bugs sem precisar de login.</p>
+
+    <h3>Campos do Formulario</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campo</th><th>Obrigatorio</th><th>Validacao</th></tr></thead>
+        <tbody>
+          <tr><td>Nome do reporter</td><td>Nao</td><td>-</td></tr>
+          <tr><td>Email do reporter</td><td>Nao</td><td>-</td></tr>
+          <tr><td>Titulo</td><td>Sim</td><td>5-200 caracteres</td></tr>
+          <tr><td>Onde encontrou</td><td>Sim</td><td>3-300 caracteres</td></tr>
+          <tr><td>O que fez (passos)</td><td>Sim</td><td>5-1000 caracteres</td></tr>
+          <tr><td>O que esperava</td><td>Sim</td><td>5-1000 caracteres</td></tr>
+          <tr><td>O que aconteceu</td><td>Sim</td><td>5-1000 caracteres</td></tr>
+          <tr><td>Severidade</td><td>Sim</td><td>Critica, Alta, Media, Baixa</td></tr>
+          <tr><td>Dispositivo</td><td>Nao</td><td>Auto-detectado</td></tr>
+          <tr><td>Anexos</td><td>Sim (min 1)</td><td>Max 3 arquivos, 100MB cada. JPG, PNG, WebP, MP4, MOV, WebM</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Recursos</h3>
+    <ul style="margin:12px 0 12px 20px;color:#374151;">
+      <li>Auto-save no <code>localStorage</code> a cada 500ms</li>
+      <li>Deteccao automatica de dispositivo (Android, iOS, Desktop)</li>
+      <li>Protecao contra duplicatas (idempotency key com janela de 5min)</li>
+      <li>Rate limiting: 10 envios por hora por IP</li>
+      <li>Tela de sucesso com numero do bug</li>
+    </ul>
+
+    <h3>Projetos de Teste</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Projeto</th><th>Slug</th><th>URL de Report</th></tr></thead>
+        <tbody>
+          <tr><td>AZ-IB</td><td><code>az-ib</code></td><td><code>/report/az-ib</code></td></tr>
+          <tr><td>Liscan</td><td><code>liscan</code></td><td><code>/report/liscan</code></td></tr>
+          <tr><td>NEX Solar</td><td><code>nex-solar</code></td><td><code>/report/nex-solar</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- API REFERENCE -->
+  <section id="api">
+    <h2>API Reference</h2>
+    <p>Todas as rotas de API estao em <code>/api/*</code>. Rotas autenticadas requerem header <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">&#9432;</span>
+      <span>O token e obtido via <code>POST /api/auth</code> e retornado no campo <code>session.access_token</code>.</span>
+    </div>
+
+    <!-- AUTH -->
+    <div class="endpoint" id="api-auth">
+      <div class="endpoint-header">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/auth</span>
+      </div>
+      <p class="endpoint-desc">Autenticacao de membros da equipe. Retorna sessao e dados do usuario.</p>
+
+      <strong style="font-size:12px;color:var(--text-muted);">REQUEST BODY</strong>
+      <pre><code>{
+  <span class="key">"email"</span>: <span class="str">"admin@hub360.com.br"</span>,
+  <span class="key">"password"</span>: <span class="str">"Hub360@2025"</span>
+}</code></pre>
+
+      <strong style="font-size:12px;color:var(--text-muted);">RESPONSE 200</strong>
+      <pre><code>{
+  <span class="key">"success"</span>: <span class="num">true</span>,
+  <span class="key">"session"</span>: {
+    <span class="key">"access_token"</span>: <span class="str">"eyJhbGci..."</span>,
+    <span class="key">"refresh_token"</span>: <span class="str">"..."</span>,
+    <span class="key">"expires_at"</span>: <span class="num">1234567890</span>
+  },
+  <span class="key">"user"</span>: {
+    <span class="key">"id"</span>: <span class="str">"uuid"</span>,
+    <span class="key">"email"</span>: <span class="str">"admin@hub360.com.br"</span>,
+    <span class="key">"team_member"</span>: { <span class="comment">/* TeamMember object */</span> }
+  }
+}</code></pre>
+
+      <strong style="font-size:12px;color:var(--text-muted);">ERROS</strong>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Status</th><th>Motivo</th></tr></thead>
+          <tbody>
+            <tr><td><code>400</code></td><td>Email ou senha ausentes</td></tr>
+            <tr><td><code>401</code></td><td>Credenciais invalidas</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BUGS LIST -->
+    <div class="endpoint" id="api-bugs-list">
+      <div class="endpoint-header">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/bugs</span>
+      </div>
+      <p class="endpoint-desc">Lista bugs com filtros, busca e paginacao. <strong>Requer autenticacao.</strong></p>
+
+      <strong style="font-size:12px;color:var(--text-muted);">QUERY PARAMS</strong>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Param</th><th>Tipo</th><th>Default</th><th>Descricao</th></tr></thead>
+          <tbody>
+            <tr><td><code>page</code></td><td>number</td><td>1</td><td>Pagina atual</td></tr>
+            <tr><td><code>page_size</code></td><td>number</td><td>30</td><td>Itens por pagina</td></tr>
+            <tr><td><code>project_id</code></td><td>UUID</td><td>-</td><td>Filtrar por projeto</td></tr>
+            <tr><td><code>status</code></td><td>string</td><td>-</td><td>Filtrar por status (comma-separated)</td></tr>
+            <tr><td><code>severity</code></td><td>string</td><td>-</td><td>Filtrar por severidade</td></tr>
+            <tr><td><code>assigned_to</code></td><td>UUID</td><td>-</td><td>Filtrar por responsavel</td></tr>
+            <tr><td><code>search</code></td><td>string</td><td>-</td><td>Busca por titulo (full-text)</td></tr>
+            <tr><td><code>sort_by</code></td><td>string</td><td>created_at</td><td>Campo de ordenacao</td></tr>
+            <tr><td><code>sort_dir</code></td><td>asc|desc</td><td>desc</td><td>Direcao da ordenacao</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <strong style="font-size:12px;color:var(--text-muted);">RESPONSE 200</strong>
+      <pre><code>{
+  <span class="key">"bugs"</span>: [
+    {
+      <span class="key">"id"</span>: <span class="str">"uuid"</span>,
+      <span class="key">"number"</span>: <span class="num">1</span>,
+      <span class="key">"title"</span>: <span class="str">"Botao nao responde"</span>,
+      <span class="key">"status"</span>: <span class="str">"new"</span>,
+      <span class="key">"severity"</span>: <span class="str">"critical"</span>,
+      <span class="key">"created_at"</span>: <span class="str">"2025-03-18T..."</span>,
+      <span class="key">"project"</span>: { <span class="key">"name"</span>: <span class="str">"AZ-IB"</span> },
+      <span class="key">"assignee"</span>: { <span class="key">"name"</span>: <span class="str">"Ana Souza"</span> }
+    }
+  ],
+  <span class="key">"total"</span>: <span class="num">50</span>,
+  <span class="key">"page"</span>: <span class="num">1</span>,
+  <span class="key">"page_size"</span>: <span class="num">30</span>,
+  <span class="key">"total_pages"</span>: <span class="num">2</span>
+}</code></pre>
+    </div>
+
+    <!-- BUGS CREATE -->
+    <div class="endpoint" id="api-bugs-create">
+      <div class="endpoint-header">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/bugs</span>
+      </div>
+      <p class="endpoint-desc">Cria um novo bug report. <strong>Rota publica</strong> (sem autenticacao).</p>
+
+      <strong style="font-size:12px;color:var(--text-muted);">REQUEST BODY</strong>
+      <pre><code>{
+  <span class="key">"project_slug"</span>: <span class="str">"az-ib"</span>,
+  <span class="key">"title"</span>: <span class="str">"Botao de login nao funciona"</span>,
+  <span class="key">"where_found"</span>: <span class="str">"Tela de login > Botao Entrar"</span>,
+  <span class="key">"steps_taken"</span>: <span class="str">"Abri o app, digitei email..."</span>,
+  <span class="key">"expected_behavior"</span>: <span class="str">"Login bem-sucedido"</span>,
+  <span class="key">"actual_behavior"</span>: <span class="str">"Nada acontece"</span>,
+  <span class="key">"severity"</span>: <span class="str">"high"</span>,
+  <span class="key">"device_info"</span>: <span class="str">"Samsung Galaxy A34 / Android 14"</span>,
+  <span class="key">"reporter_name"</span>: <span class="str">"Joao"</span>,
+  <span class="key">"reporter_email"</span>: <span class="str">"joao@email.com"</span>,
+  <span class="key">"attachment_paths"</span>: [
+    { <span class="key">"path"</span>: <span class="str">"az-ib/123-foto.png"</span>, <span class="key">"name"</span>: <span class="str">"foto.png"</span>, <span class="key">"type"</span>: <span class="str">"image/png"</span>, <span class="key">"size"</span>: <span class="num">102400</span> }
+  ]
+}</code></pre>
+
+      <strong style="font-size:12px;color:var(--text-muted);">RESPONSE 200</strong>
+      <pre><code>{
+  <span class="key">"success"</span>: <span class="num">true</span>,
+  <span class="key">"bug"</span>: { <span class="key">"id"</span>: <span class="str">"uuid"</span>, <span class="key">"number"</span>: <span class="num">42</span> },
+  <span class="key">"duplicate"</span>: <span class="num">false</span>
+}</code></pre>
+
+      <strong style="font-size:12px;color:var(--text-muted);">ERROS</strong>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Status</th><th>Motivo</th></tr></thead>
+          <tbody>
+            <tr><td><code>400</code></td><td>Campos obrigatorios ausentes ou invalidos</td></tr>
+            <tr><td><code>404</code></td><td>Projeto nao encontrado</td></tr>
+            <tr><td><code>403</code></td><td>Projeto inativo</td></tr>
+            <tr><td><code>429</code></td><td>Rate limit excedido (max 10/hora/IP)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BUG DETAIL -->
+    <div class="endpoint" id="api-bugs-get">
+      <div class="endpoint-header">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/bugs/:id</span>
+      </div>
+      <p class="endpoint-desc">Retorna detalhes completos de um bug, incluindo anexos, notas e audit log. <strong>Requer autenticacao.</strong></p>
+
+      <strong style="font-size:12px;color:var(--text-muted);">RESPONSE 200</strong>
+      <pre><code>{
+  <span class="key">"id"</span>: <span class="str">"uuid"</span>,
+  <span class="key">"number"</span>: <span class="num">1</span>,
+  <span class="key">"title"</span>: <span class="str">"Botao nao responde"</span>,
+  <span class="key">"status"</span>: <span class="str">"new"</span>,
+  <span class="key">"severity"</span>: <span class="str">"critical"</span>,
+  <span class="key">"version"</span>: <span class="num">2</span>,
+  <span class="key">"where_found"</span>: <span class="str">"..."</span>,
+  <span class="key">"steps_taken"</span>: <span class="str">"..."</span>,
+  <span class="key">"expected_behavior"</span>: <span class="str">"..."</span>,
+  <span class="key">"actual_behavior"</span>: <span class="str">"..."</span>,
+  <span class="key">"project"</span>: { <span class="key">"name"</span>: <span class="str">"AZ-IB"</span> },
+  <span class="key">"assignee"</span>: { <span class="key">"name"</span>: <span class="str">"Ana Souza"</span> },
+  <span class="key">"attachments"</span>: [{ <span class="key">"file_name"</span>: <span class="str">"foto.png"</span>, <span class="key">"url"</span>: <span class="str">"https://signed..."</span> }],
+  <span class="key">"notes"</span>: [{ <span class="key">"content"</span>: <span class="str">"Investigando..."</span>, <span class="key">"author"</span>: {} }],
+  <span class="key">"audit_log"</span>: [{ <span class="key">"action"</span>: <span class="str">"status_changed"</span>, <span class="key">"old_value"</span>: <span class="str">"new"</span>, <span class="key">"new_value"</span>: <span class="str">"analyzing"</span> }]
+}</code></pre>
+    </div>
+
+    <!-- BUG UPDATE -->
+    <div class="endpoint" id="api-bugs-update">
+      <div class="endpoint-header">
+        <span class="method method-patch">PATCH</span>
+        <span class="endpoint-path">/api/bugs/:id</span>
+      </div>
+      <p class="endpoint-desc">Atualiza status, responsavel ou duplicata de um bug. <strong>Requer autenticacao.</strong> Usa optimistic locking.</p>
+
+      <strong style="font-size:12px;color:var(--text-muted);">REQUEST BODY</strong>
+      <pre><code>{
+  <span class="key">"status"</span>: <span class="str">"analyzing"</span>,
+  <span class="key">"assigned_to"</span>: <span class="str">"uuid-do-membro"</span>,
+  <span class="key">"version"</span>: <span class="num">2</span>  <span class="comment">// para optimistic locking</span>
+}</code></pre>
+
+      <strong style="font-size:12px;color:var(--text-muted);">ERROS</strong>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Status</th><th>Motivo</th></tr></thead>
+          <tbody>
+            <tr><td><code>400</code></td><td>Status invalido ou nenhum campo enviado</td></tr>
+            <tr><td><code>401</code></td><td>Nao autenticado</td></tr>
+            <tr><td><code>409</code></td><td>Conflito de versao (outro usuario editou)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="endpoint" id="api-notes">
+      <div class="endpoint-header">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/bugs/:id/notes</span>
+      </div>
+      <p class="endpoint-desc">Adiciona uma nota interna a um bug. <strong>Requer autenticacao.</strong> Apenas membros da equipe.</p>
+
+      <strong style="font-size:12px;color:var(--text-muted);">REQUEST BODY</strong>
+      <pre><code>{
+  <span class="key">"content"</span>: <span class="str">"Investigando o problema. Parece ser memory leak."</span>
+}</code></pre>
+
+      <strong style="font-size:12px;color:var(--text-muted);">RESPONSE 200</strong>
+      <pre><code>{
+  <span class="key">"success"</span>: <span class="num">true</span>,
+  <span class="key">"note"</span>: {
+    <span class="key">"id"</span>: <span class="str">"uuid"</span>,
+    <span class="key">"content"</span>: <span class="str">"Investigando o problema..."</span>,
+    <span class="key">"author"</span>: { <span class="key">"name"</span>: <span class="str">"Ana Souza"</span> }
+  }
+}</code></pre>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="endpoint" id="api-upload">
+      <div class="endpoint-header">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/upload</span>
+      </div>
+      <p class="endpoint-desc">Upload de arquivos para anexar a bug reports. <strong>Rota publica.</strong></p>
+
+      <strong style="font-size:12px;color:var(--text-muted);">REQUEST</strong>
+      <p>Content-Type: <code>multipart/form-data</code></p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Descricao</th></tr></thead>
+          <tbody>
+            <tr><td><code>file</code></td><td>File</td><td>Arquivo para upload</td></tr>
+            <tr><td><code>project_slug</code></td><td>string</td><td>Slug do projeto</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <strong style="font-size:12px;color:var(--text-muted);">LIMITES</strong>
+      <ul style="margin:8px 0 0 20px;font-size:13px;color:#374151;">
+        <li>Tamanho maximo: <strong>100 MB</strong> por arquivo</li>
+        <li>Tipos permitidos: JPG, PNG, WebP, MP4, MOV, WebM</li>
+        <li>Maximo 3 arquivos por bug report</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- BANCO DE DADOS -->
+  <section id="banco">
+    <h2>Banco de Dados</h2>
+    <p>PostgreSQL via Supabase com Row Level Security, triggers automaticos e indices otimizados.</p>
+
+    <div id="tabelas">
+    <h3>Tabelas</h3>
+
+    <h4 style="margin:16px 0 8px;font-size:14px;">projects</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>UUID PK</td><td>Identificador unico</td></tr>
+          <tr><td><code>name</code></td><td>TEXT</td><td>Nome do projeto</td></tr>
+          <tr><td><code>slug</code></td><td>TEXT UNIQUE</td><td>Identificador URL-safe (regex validado)</td></tr>
+          <tr><td><code>description</code></td><td>TEXT</td><td>Descricao (opcional)</td></tr>
+          <tr><td><code>is_active</code></td><td>BOOLEAN</td><td>Projeto ativo (default true)</td></tr>
+          <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>Data de criacao</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:16px 0 8px;font-size:14px;">bugs</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>UUID PK</td><td>Identificador unico</td></tr>
+          <tr><td><code>number</code></td><td>INTEGER</td><td>Numero sequencial por projeto (auto-gerado)</td></tr>
+          <tr><td><code>project_id</code></td><td>UUID FK</td><td>Referencia ao projeto</td></tr>
+          <tr><td><code>title</code></td><td>TEXT</td><td>Titulo (5-200 chars)</td></tr>
+          <tr><td><code>where_found</code></td><td>TEXT</td><td>Onde encontrou (3-300 chars)</td></tr>
+          <tr><td><code>steps_taken</code></td><td>TEXT</td><td>Passos para reproduzir (5-1000 chars)</td></tr>
+          <tr><td><code>expected_behavior</code></td><td>TEXT</td><td>Comportamento esperado (5-1000 chars)</td></tr>
+          <tr><td><code>actual_behavior</code></td><td>TEXT</td><td>Comportamento real (5-1000 chars)</td></tr>
+          <tr><td><code>severity</code></td><td>TEXT</td><td>critical, high, medium, low</td></tr>
+          <tr><td><code>status</code></td><td>TEXT</td><td>new, analyzing, fixing, awaiting_validation, resolved, closed, reopened</td></tr>
+          <tr><td><code>assigned_to</code></td><td>UUID FK</td><td>Membro responsavel (nullable)</td></tr>
+          <tr><td><code>version</code></td><td>INTEGER</td><td>Versao para optimistic locking</td></tr>
+          <tr><td><code>device_info</code></td><td>TEXT</td><td>Info do dispositivo (nullable)</td></tr>
+          <tr><td><code>reporter_name</code></td><td>TEXT</td><td>Nome do reporter (nullable)</td></tr>
+          <tr><td><code>reporter_email</code></td><td>TEXT</td><td>Email do reporter (nullable)</td></tr>
+          <tr><td><code>reporter_ip</code></td><td>INET</td><td>IP do reporter</td></tr>
+          <tr><td><code>idempotency_key</code></td><td>TEXT UNIQUE</td><td>Chave anti-duplicata</td></tr>
+          <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>Data de criacao</td></tr>
+          <tr><td><code>updated_at</code></td><td>TIMESTAMPTZ</td><td>Data de atualizacao (auto)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:16px 0 8px;font-size:14px;">team_members</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>UUID PK</td><td>Identificador unico</td></tr>
+          <tr><td><code>auth_user_id</code></td><td>UUID FK</td><td>Referencia ao auth.users do Supabase</td></tr>
+          <tr><td><code>name</code></td><td>TEXT</td><td>Nome do membro</td></tr>
+          <tr><td><code>email</code></td><td>TEXT UNIQUE</td><td>Email</td></tr>
+          <tr><td><code>role</code></td><td>TEXT</td><td>dev, pm, admin</td></tr>
+          <tr><td><code>is_active</code></td><td>BOOLEAN</td><td>Membro ativo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:16px 0 8px;font-size:14px;">bug_attachments</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Coluna</th><th>Tipo</th><th>Descricao</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>UUID PK</td><td>Identificador</td></tr>
+          <tr><td><code>bug_id</code></td><td>UUID FK</td><td>Bug associado (CASCADE)</td></tr>
+          <tr><td><code>file_name</code></td><td>TEXT</td><td>Nome do arquivo</td></tr>
+          <tr><td><code>file_type</code></td><td>TEXT</td><td>MIME type</td></tr>
+          <tr><td><code>file_size</code></td><td>BIGINT</td><td>Tamanho em bytes</td></tr>
+          <tr><td><code>storage_path</code></td><td>TEXT</td><td>Caminho no Supabase Storage</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:16px 0 8px;font-size:14px;">bug_notes &amp; bug_audit_log</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tabela</th><th>Descricao</th><th>Campos-chave</th></tr></thead>
+        <tbody>
+          <tr><td><code>bug_notes</code></td><td>Notas internas (append-only)</td><td>bug_id, author_id, content</td></tr>
+          <tr><td><code>bug_audit_log</code></td><td>Historico de mudancas</td><td>bug_id, actor_id, action, old_value, new_value</td></tr>
+          <tr><td><code>rate_limits</code></td><td>Controle de rate limiting</td><td>ip_address, endpoint, created_at</td></tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+
+    <div id="triggers">
+    <h3>Triggers & Functions</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Trigger</th><th>Tabela</th><th>Descricao</th></tr></thead>
+        <tbody>
+          <tr><td><code>update_updated_at()</code></td><td>bugs</td><td>Atualiza <code>updated_at</code> automaticamente</td></tr>
+          <tr><td><code>generate_bug_number()</code></td><td>bugs</td><td>Gera numero sequencial por projeto</td></tr>
+          <tr><td><code>log_bug_changes()</code></td><td>bugs</td><td>Registra mudancas no audit log e incrementa versao</td></tr>
+          <tr><td><code>clean_old_rate_limits()</code></td><td>rate_limits</td><td>Remove entradas com mais de 1 hora</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Row Level Security (RLS)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tabela</th><th>Anon</th><th>Authenticated</th></tr></thead>
+        <tbody>
+          <tr><td>projects</td><td>Leitura (ativos)</td><td>CRUD completo</td></tr>
+          <tr><td>team_members</td><td>-</td><td>Leitura + gestao</td></tr>
+          <tr><td>bugs</td><td>-</td><td>Leitura + atualizacao</td></tr>
+          <tr><td>bug_attachments</td><td>-</td><td>Leitura</td></tr>
+          <tr><td>bug_notes</td><td>-</td><td>Leitura</td></tr>
+          <tr><td>bug_audit_log</td><td>-</td><td>Leitura</td></tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+  </section>
+
+  <!-- SEGURANCA -->
+  <section id="auth-flow">
+    <h2>Seguranca</h2>
+
+    <h3>Fluxo de Autenticacao</h3>
+    <div class="flow">
+      <div class="flow-step">1. Login</div>
+      <span class="flow-arrow">-></span>
+      <div class="flow-step">2. POST /api/auth</div>
+      <span class="flow-arrow">-></span>
+      <div class="flow-step">3. Supabase Auth</div>
+      <span class="flow-arrow">-></span>
+      <div class="flow-step">4. Token JWT</div>
+      <span class="flow-arrow">-></span>
+      <div class="flow-step">5. localStorage</div>
+    </div>
+    <p>Cada requisicao autenticada envia <code>Authorization: Bearer &lt;access_token&gt;</code>. O server valida via <code>supabase.auth.getUser(token)</code>.</p>
+
+    <h3 id="rate-limit">Rate Limiting</h3>
+    <ul style="margin:8px 0 16px 20px;color:#374151;">
+      <li>10 submissoes por hora por IP</li>
+      <li>Rastreado por IP + endpoint na tabela <code>rate_limits</code></li>
+      <li>Auto-limpeza de registros com mais de 1 hora</li>
+      <li>Retorna <code>429 Too Many Requests</code> quando excedido</li>
+    </ul>
+
+    <h3>Protecao Anti-Duplicata</h3>
+    <ul style="margin:8px 0 16px 20px;color:#374151;">
+      <li>Hash gerado com: project_id + titulo + passos + IP + janela de 5 minutos</li>
+      <li>Constraint UNIQUE na coluna <code>idempotency_key</code></li>
+      <li>Retorna o bug existente se duplicata detectada</li>
+    </ul>
+
+    <h3>Optimistic Locking</h3>
+    <ul style="margin:8px 0 16px 20px;color:#374151;">
+      <li>Campo <code>version</code> em cada bug</li>
+      <li>PATCH envia <code>version</code> atual do cliente</li>
+      <li>Se versao no banco diferir, retorna <code>409 Conflict</code></li>
+      <li>Incrementa automaticamente via trigger</li>
+    </ul>
+
+    <h3 id="security-headers">Headers de Seguranca</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Header</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td><code>X-Frame-Options</code></td><td>DENY</td></tr>
+          <tr><td><code>X-Content-Type-Options</code></td><td>nosniff</td></tr>
+          <tr><td><code>Referrer-Policy</code></td><td>strict-origin-when-cross-origin</td></tr>
+          <tr><td><code>Strict-Transport-Security</code></td><td>max-age=63072000; includeSubDomains; preload</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TESTES -->
+  <section id="testes">
+    <h2>Testes</h2>
+    <p>64 testes E2E com Playwright cobrindo toda a aplicacao.</p>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">&#9432;</span>
+      <span>Rodar testes: <code>npx playwright test</code> (requer server na porta 3333)</span>
+    </div>
+
+    <h3>Cobertura</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Categoria</th><th>Testes</th><th>Descricao</th></tr></thead>
+        <tbody>
+          <tr><td>Login Page</td><td>5</td><td>Form, credenciais invalidas, redirect, loading state, subtitle</td></tr>
+          <tr><td>Dashboard</td><td>17</td><td>Lista, filtros, busca, drawer, notas, status, ordenacao, logout</td></tr>
+          <tr><td>Bug Report Form</td><td>14</td><td>Validacao, submit, upload, remocao, severidade, auto-save</td></tr>
+          <tr><td>API Security</td><td>6</td><td>Auth obrigatoria, token invalido, validacao de campos</td></tr>
+          <tr><td>API Auth Edge Cases</td><td>2</td><td>Body vazio, resposta de sessao valida</td></tr>
+          <tr><td>API Bug Detail</td><td>3</td><td>Auth, token invalido, bug inexistente</td></tr>
+          <tr><td>API Patch Bug</td><td>4</td><td>Token invalido, status invalido, body vazio, update valido</td></tr>
+          <tr><td>API Notes</td><td>4</td><td>Auth, token invalido, content vazio, criacao valida</td></tr>
+          <tr><td>API Upload</td><td>1</td><td>Rejeita request sem arquivo</td></tr>
+          <tr><td>API Bugs List</td><td>4</td><td>Filtros: search, severity, sorting, status</td></tr>
+          <tr><td>Navigation</td><td>1</td><td>Root redirect para /login</td></tr>
+          <tr><td><strong>Total</strong></td><td><strong>64</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SEED -->
+  <section id="seed">
+    <h2>Dados de Seed</h2>
+    <p>O script <code>seed.mjs</code> popula o banco com dados de teste realistas.</p>
+
+    <h3>Usuarios</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nome</th><th>Email</th><th>Papel</th></tr></thead>
+        <tbody>
+          <tr><td>Ricardo Mendes</td><td>admin@hub360.com.br</td><td>Admin</td></tr>
+          <tr><td>Ana Souza</td><td>dev@hub360.com.br</td><td>Dev</td></tr>
+          <tr><td>Carlos Lima</td><td>pm@hub360.com.br</td><td>PM</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Projetos</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nome</th><th>Slug</th><th>Descricao</th></tr></thead>
+        <tbody>
+          <tr><td>AZ-IB</td><td>az-ib</td><td>App bancario AZ-IB</td></tr>
+          <tr><td>Liscan</td><td>liscan</td><td>App Liscan iOS</td></tr>
+          <tr><td>NEX Solar</td><td>nex-solar</td><td>Plataforma de financiamento solar</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Inclui <strong>12 bugs de exemplo</strong> com severidades e status variados, e <strong>4 notas internas</strong> de amostra.</p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <span>Senha padrao de todos os usuarios de teste: <code>Hub360@2025</code></span>
+    </div>
+  </section>
+
+  <!-- ENV VARS -->
+  <section id="env">
+    <h2>Variaveis de Ambiente</h2>
+    <p>Crie um arquivo <code>.env.local</code> na raiz do projeto:</p>
+    <pre><code><span class="key">NEXT_PUBLIC_SUPABASE_URL</span>=<span class="str">https://seu-projeto.supabase.co</span>
+<span class="key">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>=<span class="str">eyJhbGci...</span>
+<span class="key">SUPABASE_SERVICE_ROLE_KEY</span>=<span class="str">eyJhbGci...</span></code></pre>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <span>Nunca commite o <code>.env.local</code> no repositorio. Ele ja esta no <code>.gitignore</code>.</span>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>Hub 360 Bug Tracker - Documentacao v1.0</span>
+  <span>Gerado em Março 2026</span>
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const links = document.querySelectorAll('.sidebar a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    links.forEach(a => {
+      a.classList.remove('active');
+      if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
